@@ -326,7 +326,7 @@ below.\n- Submit a blank field to cancel and return.", [], [], 0, iAuth);
 ReadDestinations()   // On inventory change, re-read our ~destinations notecard and pull from https://raw.githubusercontent.com/OpenCollar/OpenCollarUpdater/main/LSL/~bookmarks
 {
     key kAv;
-    webLookup = llHTTPRequest("https://raw.githubusercontent.com/OpenCollar/OpenCollarUpdater/main/LSL/~bookmarks", 
+    webLookup = llHTTPRequest("https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/hypergrid/LSL/~bookmarks", 
         [HTTP_METHOD, "GET", HTTP_VERBOSE_THROTTLE, FALSE], "");
     g_lDestinations = [];
     g_lDestinations_Slurls = [];

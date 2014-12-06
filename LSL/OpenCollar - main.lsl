@@ -104,10 +104,10 @@ integer g_iUpdateHandle;
 key g_kUpdaterOrb;
 integer g_iUpdateFromMenu;
 
-string version_check_url = "https://raw.githubusercontent.com/OpenCollar/OpenCollarUpdater/main/LSL/~version";
+string version_check_url = "https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/hypergrid/LSL/~version";
 key github_version_request;
 
-string news_url = "https://raw.githubusercontent.com/OpenCollar/OpenCollarUpdater/main/LSL/~news";
+string news_url = "https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/hypergrid/LSL/~news";
 key news_request;
 string g_sLastNewsTime = "0";
 
@@ -590,7 +590,7 @@ default
                     } else if (sMessage == LICENSE) {
                         UserCommand(iAuth,"license",kAv, TRUE);
                     } else if (sMessage == CONTACT) {
-                        g_kWebLookup = llHTTPRequest("https://raw.githubusercontent.com/OpenCollar/OpenCollarUpdater/main/LSL/~contact", [HTTP_METHOD, "GET", HTTP_VERBOSE_THROTTLE, FALSE], "");
+                        g_kWebLookup = llHTTPRequest("https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/hypergrid/LSL/~contact", [HTTP_METHOD, "GET", HTTP_VERBOSE_THROTTLE, FALSE], "");
                         g_kCurrentUser = kAv;
                         HelpMenu(kAv, iAuth);
                     } else if (sMessage=="☐ News") {
@@ -759,7 +759,7 @@ default
         llListenRemove(g_iUpdateHandle);
 
         if (!g_iWillingUpdaters) {   //if no updaters responded, get upgrader info from web and remenu
-            g_kWebLookup = llHTTPRequest("https://raw.githubusercontent.com/OpenCollar/OpenCollarUpdater/main/LSL/~update", [HTTP_METHOD, "GET", HTTP_VERBOSE_THROTTLE, FALSE], "");
+            g_kWebLookup = llHTTPRequest("https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/hypergrid/LSL/~update", [HTTP_METHOD, "GET", HTTP_VERBOSE_THROTTLE, FALSE], "");
             if (g_iUpdateFromMenu) HelpMenu(g_kCurrentUser,g_iUpdateAuth);
         } else if (g_iWillingUpdaters > 1) {    //if too many updaters, PANIC!
             Notify(g_kCurrentUser,"Multiple updaters were found within 10m.  Please remove all but one and try again",FALSE);
