@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                             OpenCollar - listener                              //
-//                                 version 3.990                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -17,16 +17,12 @@ integer g_iListenChan0 = TRUE;
 string g_sPrefix = ".";
 integer g_iPollForNameChange = 60; //seconds to poll for name change
 integer g_iCustomName = FALSE; //this is our bit flag to see if we're using an LM_SETTING custom name
-
 integer g_iLockMeisterChan = -8888;
-
 integer g_iListener1;
 integer g_iListener2;
 integer g_iLockMeisterListener;
-
 integer g_iHUDListener;
 integer g_iHUDChan;
-//list g_lHudComms;  //2 strided list of uuid and unixtime of something that communicated on the hud channel
 
 //MESSAGE MAP
 integer COMMAND_NOAUTH = 0;
@@ -37,99 +33,58 @@ integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
 integer COMMAND_RLV_RELAY = 507;
 integer COMMAND_SAFEWORD = 510;  // new for safeword
-//integer SEND_IM = 1000; deprecated.  each script should send its own IMs now.  This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
 integer NOTIFY=1002;
 integer NOTIFY_OWNERS=1003;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
 //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the httpdb script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
 integer LM_SETTING_EMPTY = 2004;//sent when a token has no value in the httpdb
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
-
 integer INTERFACE_REQUEST = -9006;
 integer INTERFACE_RESPONSE = -9007;
-
 integer TOUCH_REQUEST = -9500;
 integer TOUCH_CANCEL = -9501;
 integer TOUCH_RESPONSE = -9502;
 integer TOUCH_EXPIRE = -9503;
 
-
-//5000 block is reserved for IM slaves
-
 //EXTERNAL MESSAGE MAP
 integer EXT_COMMAND_COLLAR = 499;
-
 // new g_sSafeWord
 string g_sSafeWord = "RED";
-
 //added for attachment auth
 integer g_iInterfaceChannel; // AO Backwards Compatibility
 integer g_iListenHandleAtt;
-
 integer ATTACHMENT_REQUEST = 600;
 integer ATTACHMENT_RESPONSE = 601;
 integer ATTACHMENT_FORWARD = 610;
-
 key g_kWearer;
 string g_sScript = "listener_";
 string CTYPE = "collar";
 string WEARERNAME;
 list g_lOwners;
-
 //globlals for supporting touch requests
 list g_lTouchRequests; // 4-strided list in form of touchid, recipient, flags, auth level
 integer g_iStrideLength = 4;
-
 integer FLAG_TOUCHSTART = 0x01;
 integer FLAG_TOUCHEND = 0x02;
-
 integer g_iNeedsPose = FALSE;  // should the avatar be forced into a still pose for making touching easier
 string g_sPOSE_ANIM = "turn_180";
-
 integer g_iTouchNotify = FALSE;  // for Touch Notify
 
 
-/*
-integer g_iProfiled;
-Debug(string sStr) {
-    //if you delete the first // from the preceeding and following  lines,
-    //  profiling is off, debug is off, and the compiler will remind you to 
-    //  remove the debug calls from the code, we're back to production mode
-    if (!g_iProfiled){
-        g_iProfiled=1;
-        llScriptProfiler(1);
-    }
-    llOwnerSay(llGetScriptName() + "(min free:"+(string)(llGetMemoryLimit()-llGetSPMaxMemory())+") :\n" + sStr);
-}
-*/
-
 Notify(key kID, string sMsg, integer iAlsoNotifyWearer) {
-//    integer pos;
-//    while (~pos=llSubStringIndex(sMsg, "%WEARERNAME%")) {
-//        if (llStringLength(sMsg) == 12) { sMsg = WEARERNAME; }
-//        else if (pos == 0) { sMsg = WEARERNAME+llGetSubString(sMsg, pos+12, -1); }
-//        else if (pos == llStringLength(sMsg)-12) { sMsg = llGetSubString(sMsg, 0, pos-1)+WEARERNAME; }
-//        else { sMsg = llGetSubString(sMsg, 0, pos-1)+WEARERNAME+llGetSubString(sMsg, pos+12, -1); }
-//    }
+
     if ((key)kID){
         if (kID == g_kWearer) llOwnerSay(sMsg);
-        else {
-//            if (~llListFindList(g_lHudComms,[kID])){
-//                llRegionSayTo(kID,g_iHUDChan,sMsg);
-//            } else 
+        else { 
             if (llGetAgentSize(kID)) llRegionSayTo(kID,0,sMsg);
             else llInstantMessage(kID, sMsg);
             if (iAlsoNotifyWearer) llOwnerSay(sMsg);
         }
-    //} else {
-        //Debug("Bad key, can't notify:"+sMsg);
     }
 }
 
@@ -142,14 +97,9 @@ NotifyOwners(string sMsg, string comments) {
             //we don't want to bother the owner if he/she is right there, so check distance
             vector vOwnerPos = (vector)llList2String(llGetObjectDetails(kAv, [OBJECT_POS]), 0);
             if (vOwnerPos == ZERO_VECTOR || llVecDist(vOwnerPos, llGetPos()) > 20.0) {//vOwnerPos will be ZERO_VECTOR if not in sim
-                //Debug("notifying " + (string)kAv);
-                //Debug("Sending notify to "+(string)kAv);
                 Notify(kAv, sMsg,FALSE);
-            //} else {
-                //Debug("Not sending notify to "+(string)kAv);
             }
         } else {
-            //Debug("Sending notify to "+(string)kAv);
             Notify(kAv, sMsg,FALSE);
         }
     }
@@ -194,11 +144,7 @@ sendCommandFromLink(integer iLinkNumber, string sType, key kToucher) {
         }
     }
     // check for permanent triggers (inlined sendPermanentCommandFromLink(iLinkNumber, sType, kToucher);)    
-    //string sDesc = (string)llGetObjectDetails(llGetLinkKey(iLinkNumber), [OBJECT_DESC]);
-    //sDesc += (string)llGetObjectDetails(llGetLinkKey(LINK_ROOT), [OBJECT_DESC]);
-    
     string sDesc = llDumpList2String(llGetLinkPrimitiveParams(iLinkNumber,[PRIM_DESC])+llGetLinkPrimitiveParams(LINK_ROOT,[PRIM_DESC]),"~");
-    
     list lDescTokens = llParseStringKeepNulls(sDesc, ["~"], []);
     integer iNDescTokens = llGetListLength(lDescTokens);
     integer iDescToken;
@@ -225,53 +171,40 @@ default
     {
         g_kWearer = llGetOwner();
         WEARERNAME = llGetDisplayName(g_kWearer);
-        if (WEARERNAME == "???" || WEARERNAME == "") WEARERNAME == llKey2Name(g_kWearer);
-        
+        if (WEARERNAME == "???" || WEARERNAME == "") 
+            WEARERNAME = llKey2Name(g_kWearer);
         list name = llParseString2List(llKey2Name(g_kWearer), [" "], []);
         g_sPrefix = llGetSubString(llList2String(name, 0), 0, 0);
         g_sPrefix += llGetSubString(llList2String(name, 1), 0, 0);
         g_sPrefix = llToLower(g_sPrefix);
-        //Debug("Default prefix: " + g_sPrefix);
-
         //inlined single use getOwnerChannel function
         g_iHUDChan = -llAbs((integer)("0x"+llGetSubString((string)g_kWearer,2,7)) + 1111);
         if (g_iHUDChan > -10000) g_iHUDChan -= 30000;
-
         g_iInterfaceChannel = (integer)("0x" + llGetSubString(g_kWearer,30,-1));
-        if (g_iInterfaceChannel > 0) g_iInterfaceChannel = -g_iInterfaceChannel;
-    
+        if (g_iInterfaceChannel > 0) g_iInterfaceChannel = -g_iInterfaceChannel;  
         //set up listeners... inlined existing function
         //public listener
         llListenRemove(g_iListener1);
         if (g_iListenChan0 == TRUE) g_iListener1 = llListen(0, "", NULL_KEY, "");
-
         //private listener
         llListenRemove(g_iListener2);
         g_iListener2 = llListen(g_iListenChan, "", NULL_KEY, "");
-
         //lockmeister listener
         llListenRemove(g_iLockMeisterListener);
         g_iLockMeisterListener = llListen(g_iLockMeisterChan, "", NULL_KEY, (string)g_kWearer + "collar");
-
         //garvin attachments listener
         llListenRemove(g_iListenHandleAtt);
         g_iListenHandleAtt = llListen(g_iInterfaceChannel, "", "", "");
-
         //owner hud listener
         llListenRemove(g_iHUDListener);
         g_iHUDListener = llListen(g_iHUDChan, "", NULL_KEY ,""); //reinstated
-    
         integer iAttachPt = llGetAttached();
         if ((iAttachPt > 0 && iAttachPt < 31) || iAttachPt == 39) // if collar is attached to the body (thus excluding HUD and root/avatar center)
             llRequestPermissions(g_kWearer, PERMISSION_TRIGGER_ANIMATION);
-        //llMessageLinked(LINK_SET, LM_SETTING_REQUEST, "Global_prefix", "");
-        //llMessageLinked(LINK_SET, LM_SETTING_REQUEST, "channel", "");
-        //Debug("Starting");
     }
 
     attach(key kID)
     {
-        //g_kWearer = llGetOwner();
         if (kID == NULL_KEY)
         {
             llRegionSayTo(g_kWearer, g_iInterfaceChannel, "OpenCollar=No");
@@ -288,45 +221,25 @@ default
     listen(integer iChan, string sName, key kID, string sMsg)
     {
         if (iChan == g_iHUDChan)
-        {
-//            //track hud channel users
-//            integer hudIndex;
-//            if (~hudIndex=llListFindList(g_lHudComms,[kID])){
-//                g_lHudComms=llDeleteSubList(g_lHudComms,hudIndex,hudIndex+1);
-//            }
-//            g_lHudComms += [kID,llGetUnixTime()];
-            
+        {            
             //check for a ping, if we find one we request auth and answer in LMs with a pong
             if (sMsg==(string)g_kWearer + ":ping")
             {
-                //llMessageLinked(LINK_SET, COMMAND_NOAUTH, "ping", kID);
                 llMessageLinked(LINK_SET, COMMAND_NOAUTH, "ping", llGetOwnerKey(kID));
             }
             // an object wants to know the version, we check if it is allowed to
             else if (sMsg==(string)g_kWearer + ":version")
             {
-                //llMessageLinked(LINK_SET, COMMAND_NOAUTH, "objectversion", kID);
                 llMessageLinked(LINK_SET, COMMAND_NOAUTH, "objectversion", llGetOwnerKey(kID));
             }
             // it it is not a ping, it should be a command for use, to make sure it has to have the key in front of it
             else if (!llSubStringIndex(sMsg,(string)g_kWearer + ":"))
             {
                 sMsg = llGetSubString(sMsg, 37, -1);
-                //llMessageLinked(LINK_SET, COMMAND_NOAUTH, sMsg, kID);
                 llMessageLinked(LINK_SET, COMMAND_NOAUTH, sMsg, llGetOwnerKey(kID));
             }
             else
             {
-//                //Debug("command: "+sMsg+" from "+(string)kID);
-//                if (llGetOwnerKey(kID)==llGetOwner()){  //if the wearer's attachment requests it, then the command can be proxied for another user
-//                    key sDestAv = llGetSubString(sMsg, 0, 35);
-//                    if ((key)sDestAv){
-//                        sMsg = llGetSubString(sMsg, 36, -1);
-//                        kID=sDestAv;
-//                        //Debug("command for foreign user");
-//                    }
-//                }
-                //Debug("command: "+sMsg+" from "+(string)kID);
                 llMessageLinked(LINK_SET, COMMAND_NOAUTH, sMsg, llGetOwnerKey(kID));
             }
             return;
@@ -346,7 +259,6 @@ default
             if (llSubStringIndex(sw, g_sPrefix)==0) sw = llGetSubString(sw, llStringLength(g_sPrefix), -1);
             if (sw == g_sSafeWord) {
                 llMessageLinked(LINK_SET, COMMAND_SAFEWORD, "", "");
-                
                 llOwnerSay("You used your safeword, your owners will be notified you did.");
                 NotifyOwners("Your sub " + WEARERNAME + " has used the safeword. Please check on their well-being in case further care is required.","");
                 llMessageLinked(LINK_THIS, INTERFACE_RESPONSE, "safeword", "");
@@ -356,10 +268,8 @@ default
         //added for attachment auth (garvin)
         if (iChan == g_iInterfaceChannel)
         {
-            //Debug(sMsg);
             //do nothing if wearer isnt owner of the object
             if (llGetOwnerKey(kID) != g_kWearer) return;
-            //if (sMsg == "OpenCollar?") llWhisper(g_iInterfaceChannel, "OpenCollar=Yes");
             if (sMsg == "OpenCollar?") llRegionSayTo(g_kWearer, g_iInterfaceChannel, "OpenCollar=Yes");
             else if (sMsg == "version") llMessageLinked(LINK_SET, COMMAND_WEARER, "attachmentversion", g_kWearer);  //main knows version number, main can respond to this request for us
             else {
@@ -371,8 +281,6 @@ default
                     string sCmd = llList2String(lParams, 1);
                     string sUserId= llGetSubString(llList2String(lParams, 2),0,35);
                     string sObjectId= llGetSubString(llList2String(lParams, 2),36,-1);
-                    
-                    //Debug("garvin auth for key"+sUserId);
                     //just send ATTACHMENT_REQUEST and ID to auth, as no script IN the collar needs the command anyway
                     llMessageLinked(LINK_SET, ATTACHMENT_REQUEST, sCmd+"|"+sUserId+"|"+sObjectId, (key)sUserId);
                 }
@@ -391,7 +299,6 @@ default
             else if (llGetSubString(sMsg, 0, 0) == "*") sMsg = llGetSubString(sMsg, 1, -1); //strip * (all collars wildcard) from command
             else if ((llGetSubString(sMsg, 0, 0) == "#") && (kID != g_kWearer)) sMsg = llGetSubString(sMsg, 1, -1); //strip # (all collars but me) from command
             else return;
-            //Debug("Got comand "+sMsg);
             llMessageLinked(LINK_SET, COMMAND_NOAUTH, sMsg, kID);
         }
     }
@@ -408,9 +315,12 @@ default
             string sCommand = llToLower(llList2String(lParams, 0));
             string sValue = llToLower(llList2String(lParams, 1));
             
-            if (sStr == "ping") {  // ping from an object, we answer to it on the object channel
+            if (sStr == "ping") 
+            {  // ping from an object, we answer to it on the object channel
                 llRegionSayTo(kID,g_iHUDChan,(string)g_kWearer+":pong"); // sim wide response to owner hud
-            } else if (iNum == COMMAND_OWNER) {  //handle changing prefix and channel from owner
+            } 
+            else if (iNum == COMMAND_OWNER) 
+            {  //handle changing prefix and channel from owner
                 if (sCommand == "prefix")
                 {
                     string value = llList2String(lParams, 1);
@@ -425,15 +335,18 @@ default
                 }
                 else if (sCommand == "name")
                 {
-                    if (sValue=="") {  //Just let them know their current name
+                    if (sValue=="") 
+                    {  //Just let them know their current name
                         string message= "\n\n"+WEARERNAME+"'s current name is " + WEARERNAME;
                         message += "\nName command help: <prefix>name [newname|reset]\n";
                         Notify(kID, message, FALSE);
                     }
-                    else if(sValue=="reset") { //unset Global_WearerName
+                    else if(sValue=="reset") 
+                    { //unset Global_WearerName
                         string message=WEARERNAME+"'s new name is reset to ";
                         WEARERNAME = llGetDisplayName(g_kWearer);
-                        if (WEARERNAME == "???" || WEARERNAME == "") WEARERNAME == llKey2Name(g_kWearer);
+                        if (WEARERNAME == "???" || WEARERNAME == "") 
+                            WEARERNAME = llKey2Name(g_kWearer);
                         llMessageLinked(LINK_SET, LM_SETTING_DELETE, "Global_WearerName", "");  
                         message += WEARERNAME;
                         g_iCustomName = FALSE;
@@ -445,8 +358,8 @@ default
                         message += WEARERNAME;
                         g_iCustomName = TRUE;
                         Notify(kID, message, FALSE);
-                        llMessageLinked(LINK_SET, LM_SETTING_SAVE, "Global_WearerName=" + WEARERNAME, ""); //store            
-                        llMessageLinked(LINK_SET, LM_SETTING_REQUEST, "Global_WearerName", ""); //force update scripts                        
+                        llMessageLinked(LINK_SET, LM_SETTING_SAVE, "Global_WearerName=" + WEARERNAME, ""); //store
+                        llMessageLinked(LINK_SET, LM_SETTING_REQUEST, "Global_WearerName", ""); //force update scripts
                     }               
                 }
                 else if (sCommand == "channel")
@@ -459,10 +372,8 @@ default
                         Notify(kID, message, FALSE);
                     } else if (iNewChan > 0) { //set new channel for private listener
                         g_iListenChan =  iNewChan;
-
                         llListenRemove(g_iListener2);
                         g_iListener2 = llListen(g_iListenChan, "", NULL_KEY, "");
-
                         Notify(kID, "Now listening on channel " + (string)g_iListenChan + ".", FALSE);
                         if (g_iListenChan0) //save setting along with the state of thepublic listener (messy!)
                         {
@@ -557,10 +468,8 @@ default
                 g_iListenChan = (integer)sValue;
                 if (llGetSubString(sValue, llStringLength(sValue) - 5 , -1) == "FALSE") g_iListenChan0 = FALSE;
                 else g_iListenChan0 = TRUE;
-                
                 llListenRemove(g_iListener1);
                 if (g_iListenChan0 == TRUE) g_iListener1 = llListen(0, "", NULL_KEY, "");
-
                 llListenRemove(g_iListener2);
                 g_iListener2 = llListen(g_iListenChan, "", NULL_KEY, "");
             }
@@ -575,11 +484,6 @@ default
         //added for attachment auth (garvin)
         else if (iNum == ATTACHMENT_RESPONSE)
         {
-            //Debug(sStr);
-            //here the response from auth has to be:
-            // llMessageLinked(LINK_SET, ATTACHMENT_RESPONSE, "auth", UUID);
-            //where "auth" has to be (string)COMMAND_XY
-            //reason for this is: i dont want to have all other scripts recieve a COMMAND+xy and check further for the command
             llRegionSayTo(g_kWearer, g_iInterfaceChannel, "RequestReply|" + sStr);
         }
         else if (iNum == TOUCH_REQUEST)
@@ -609,7 +513,6 @@ default
         
     touch_start(integer iNum)
     {
-        //Debug("touched");
         sendCommandFromLink(llDetectedLinkNumber(0), "touchstart", llDetectedKey(0));
     }
 
@@ -617,19 +520,10 @@ default
     {
         sendCommandFromLink(llDetectedLinkNumber(0), "touchend", llDetectedKey(0));
     }
-
     //no more self resets
     changed(integer iChange)
     {
-        if (iChange & CHANGED_OWNER) llResetScript();
-/*        
-        if (iChange & CHANGED_REGION) {
-            if (g_iProfiled){
-                llScriptProfiler(1);
-                Debug("profiling restarted");
-            }
-        }
-*/        
+        if (iChange & CHANGED_OWNER) llResetScript();       
     }
 
     timer()

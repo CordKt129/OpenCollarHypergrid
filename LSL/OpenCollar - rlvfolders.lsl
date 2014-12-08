@@ -1,44 +1,34 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                            OpenCollar - rlvfolders                             //
-//                                 version 3.989                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
 string g_sParentMenu = "Un/Dress";
-
 list g_lChildren = ["Browse #RLV", "#RLV History"];
 
 //MESSAGE MAP
-//integer COMMAND_NOAUTH = 0;
 integer COMMAND_OWNER = 500;
 integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
-//integer SEND_IM = 1000; deprecated.  each script should send its own IMs now.  This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
 //sStr must be in form of "token=value"
-//integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the settings script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
-//integer LM_SETTING_EMPTY = 2004;//sent by httpdb script when a token has no value in the db
-
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
 integer RLV_CMD = 6000;
 integer RLV_REFRESH = 6001;//RLV plugins should reinstate their restrictions upon receiving this message.
 integer RLV_CLEAR = 6002;//RLV plugins should clear their restriction lists upon receiving this message.
@@ -53,11 +43,7 @@ string ACTIONS_CURRENT = "Actions";
 string ROOT_ACTIONS = "Global Actions";
 
 string UPMENU = "BACK";
-//string MORE = ">";
-
 // Folder actions
-//string ALL = "*All*";
-//string SELECT_CURRENT = "*This*";
 string REPLACE_ALL = "Replace all";
 string ADD_ALL = "Add all";
 string DETACH_ALL = "Detach all";
@@ -71,46 +57,30 @@ string LOCK_DETACH = "Lock det. this";
 
 integer g_iUnsharedLocks = 0; // 2 bits bitfield: first (strong) one for unsharedwear, second (weak) one for unsharedunwear
 list g_lFolderLocks; // strided list: folder path, lock type (4 bits field)
-
 integer g_iTimeOut = 60;
-
 integer g_iFolderRLV = 78467;
 integer g_iRLVaOn = FALSE; //Assume we don't have RLVa, until we hear that we do
-
 key g_kBrowseID;
 key g_kActionsID;
 key g_kRootActionsID;
 key g_kHistoryMenuID;
 key g_kMultipleFoldersOnSearchMenuID;
 integer g_iPage = 0;//Having a global is nice, if you redisplay the menu after an action on a folder.
-
 integer g_iListener;//Nan:do we still need this? -- SA: of course. It's where the viewer talks.
-
 // Asynchronous menu request. Alas still needed since some menus are triggered after an answer from the viewer.
 key g_kAsyncMenuUser;
 integer g_iAsyncMenuAuth;
 integer g_iAsyncMenuRequested = FALSE;
-
 string sPrompt;//Nan: why is this global?
 string g_sFolderType; //what to do with those folders
 string g_sCurrentFolder;
-
 list g_lOutfit; //saved folder list
 list g_lToCheck; //stack of folders to check, used for subfolder tree search
-
 list g_lSearchList; //list of folders to search
-
 integer g_iLastFolderState;
-
 key g_kWearer;
 string g_sScript;
-
 list g_lHistory;
-
-Debug(string sMsg)
-{
-    //llOwnerSay(llGetScriptName() + ": " + sMsg);
-}
 
 Notify(key kID, string sMsg, integer iAlsoNotifyWearer)
 {
@@ -237,13 +207,12 @@ string folderIcon(integer iState)
     string sOut = "";
     integer iStateThis = iState / 10;
     integer iStateSub = iState % 10;
-    if  (iStateThis==0) sOut += "⬚"; //▪";
+    if  (iStateThis==0) sOut += "⬚";
     else if (iStateThis==1) sOut += "◻";
     else if (iStateThis==2) sOut += "◩";
     else if (iStateThis==3) sOut += "◼";
     else sOut += " ";
-    //    sOut += "/";
-    if (iStateSub==0) sOut += "⬚"; //▪";
+    if (iStateSub==0) sOut += "⬚";
     else if (iStateSub==1) sOut += "◻";
     else if (iStateSub==2) sOut += "◩";
     else if (iStateSub==3) sOut += "◼";
@@ -320,7 +289,6 @@ doLockFolder(integer iIndex)
     if ((iLock >> 6) & 1)  sRlvCom += "n"; else sRlvCom += "y";
     sRlvCom += ",detachallthis_except:"+sFolder+"=";
     if ((iLock >> 7) & 1)  sRlvCom += "n"; else sRlvCom += "y";
-    //    llOwnerSay(sRlvCom);
     llMessageLinked(LINK_SET, RLV_CMD,  sRlvCom, NULL_KEY);
 }
 
@@ -428,22 +396,17 @@ handleMultiSearch()
     string pref1 = llGetSubString(sItem, 0, 0);
     string pref2 = llGetSubString(sItem, 0, 1);
     g_lSearchList=llDeleteSubList(g_lSearchList,0,0);
-
     if (pref1 == "+" || pref1 == "&") g_sFolderType = "searchattach";
     else if (pref1 == "-") g_sFolderType = "searchdetach";
     else jump next;  // operator was omitted, then repeat last action
-
     if (pref2 == "++" || pref2 == "--" || pref2 == "&&")
     {
         g_sFolderType += "all";
         sItem = llToLower(llGetSubString(sItem,2,-1));
     }
     else sItem = llToLower(llGetSubString(sItem,1,-1));
-
     if (pref1 == "&") g_sFolderType += "over";
-
     @next;
-    
     searchSingle(sItem);
 }
 
@@ -469,12 +432,10 @@ searchSingle(string sItem)
         sItem=g_sFirstsearch;
     }
     llSetTimerEvent(g_iTimeOut);
-    //llMessageLinked(LINK_SET, RLV_CMD,  "findfolder:"+sItem+"="+(string)g_iFolderRLV, NULL_KEY);
     if ((g_iRLVaOn) && (g_sNextsearch == "")) { //use multiple folder matching from RLVa if we have it
         llOwnerSay("@findfolders:"+sItem+"="+(string)g_iFolderRLV); //Unstored one-shot commands are better performed locally to save the linked message.
     }
     else llOwnerSay("@findfolder:"+sItem+"="+(string)g_iFolderRLV); //Unstored one-shot commands are better performed locally to save the linked message.
-
 }
 
 // set a dialog to be requested after the next viewer answer
@@ -515,7 +476,6 @@ integer UserCommand(integer iNum, string sStr, key kID)
         g_lOutfit=[];
         g_lToCheck=[];
         QueryFolders("save");
-        //if (sCommand == "menu") SetAsyncMenu(kID, iNum);
         g_kAsyncMenuUser = kID; // needed for notifying
     }
     else if (sStr=="restore"/*|| sStr=="menu Restore"*/)
@@ -524,7 +484,6 @@ integer UserCommand(integer iNum, string sStr, key kID)
         for (; i < n; ++i)
             llMessageLinked(LINK_SET, RLV_CMD,  "attachover:" + llList2String(g_lOutfit,i) + "=force", NULL_KEY);
         Notify(kID, "Saved outfit has been restored.", TRUE );
-        //if (sCommand == "menu") llMessageLinked(LINK_SET, iNum, "menu "  + g_sParentMenu, kID);;
     }
     else if (llGetSubString(sStr,0,0)=="+"||llGetSubString(sStr,0,0)=="-"||llGetSubString(sStr,0,0)=="&")
     {
@@ -552,11 +511,6 @@ default
     {
         g_sScript = llStringTrim(llList2String(llParseString2List(llGetScriptName(), ["-"], []), 1), STRING_TRIM) + "_";
         g_kWearer = llGetOwner();
-        //integer i;
-        //for (i=0;i < llGetListLength(g_lChildren);i++)
-        //{
-        //    llMessageLinked(LINK_SET, MENUNAME_RESPONSE, g_sParentMenu + "|" + llList2String(g_lChildren,i), "");
-        //}
     }
 
     link_message(integer iSender, integer iNum, string sStr, key kID)

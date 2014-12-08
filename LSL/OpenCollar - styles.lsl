@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                              OpenCollar - styles                               //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -22,16 +22,10 @@ string DUMP = "Dump Style";
 integer COMMAND_OWNER = 500;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
 integer LM_SETTING_SAVE = 2000;
-//integer LM_SETTING_REQUEST = 2001;
 integer LM_SETTING_RESPONSE = 2002;
-//integer LM_SETTING_DELETE = 2003;
-//integer LM_SETTING_EMPTY = 2004;
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
@@ -39,19 +33,15 @@ integer DIALOG_TIMEOUT = -9002;
 //script specific variables
 list g_lMenuIDs;//3-strided list of avkey, dialogid, menuname
 integer g_iMenuStride = 3;
-
 string g_sStyle;
 list g_lElementsSettings; // [element_name,"key_texture~vector_color~integer_shine"]
-
 list g_lStyles;  // list of style names
 list g_lStyleSettings; // list of style settings ["Stylename1", "elementname~keytexture~vectorcolor~integershine", "elementname~keytexture~vectorcolor~integershine", ... "Stylename2",....]
-
 key g_iNotecardId;
 key g_kNotecardReadRequest;
 string g_sNotecardName=".styles";
 integer g_iNotecardLine=0;
 string g_sNotecardStyle ;
-
 integer g_iAppLock = FALSE;
 string g_sAppLockToken = "Appearance_Lock";
 
@@ -76,14 +66,11 @@ Notify(key kID, string sMsg, integer iAlsoNotifyWearer) {
     }
 }
 
-Debug(string sStr){llOwnerSay(llGetScriptName() + ": " + sStr);}
-
 //menu generators
 StyleMenu(key kAv, integer iAuth) 
 {
     Dialog(kAv, "\nCurrent Style: "+g_sStyle+"\n\nSelect an style from the list", g_lStyles, [DUMP, UPMENU],0, iAuth, "StyleMenu");
 }
-
 
 SetStyle(string sStyle, integer iAuth, key kAv)
 {    
@@ -98,8 +85,7 @@ SetStyle(string sStyle, integer iAuth, key kAv)
                 string setting = llList2String(g_lStyleSettings,index);
                 if (~llListFindList(g_lStyles,[setting]) || setting == "") index = -1;
                 else
-                {
-                    //Debug("Setting style of "+sStyle+" "+setting);                    
+                {                  
                     list lParams = llParseString2List(setting,["~"],[]);
                     string element = llStringTrim(llList2String(lParams,0),STRING_TRIM);
                     if (element != "")
@@ -114,13 +100,11 @@ SetStyle(string sStyle, integer iAuth, key kAv)
                 }
             }
         }
-    }
-    else Debug("Can't do Style to "+sStyle);    
+    }  
 }
 
 AddElementSetting(string element, string value, integer n )
 {
-    //Debug(element +"="+ value) ;
     if (element =="") return ;
     string params;
     integer i = llListFindList(g_lElementsSettings, [element]);    
@@ -145,10 +129,8 @@ AddElementSetting(string element, string value, integer n )
 integer UserCommand(integer iAuth, string sStr, key kAv, integer remenu) 
 {
     if (iAuth > COMMAND_WEARER || iAuth < COMMAND_OWNER) return FALSE; // sanity check
-    //Debug(sStr);
     list lParams = llParseString2List(sStr, [" "], []);
     string sCommand = llList2String(lParams, 0);
-    //string sValue = llList2String(lParams, 1);
     if (sStr == "menu "+ g_sSubMenu || llToLower(sStr) == "styles")
     {
         if (kAv!=g_kWearer && iAuth!=COMMAND_OWNER) 
@@ -191,10 +173,7 @@ integer UserCommand(integer iAuth, string sStr, key kAv, integer remenu)
 
 DumpSettings(key kAv, string sep)
 {
-    //llOwnerSay(llList2CSV(g_lElementsSettings));
-    
     g_lElementsSettings = llListSort(g_lElementsSettings, 2, TRUE);
-    
     string out = "\n# Copy all below into '"+g_sNotecardName+"' notecard and change 'New Style' to own style name:\n\n[ New Style ]\n";
     integer i;
     for (i = 0; i < llGetListLength(g_lElementsSettings); i += 2)
@@ -204,13 +183,10 @@ DumpSettings(key kAv, string sep)
     Notify(kAv,out,FALSE);
 }
 
-
-
 default 
 {
     on_rez(integer param)
     {
-        //llResetScript();
         g_lElementsSettings = [] ;
     }
     
@@ -222,8 +198,7 @@ default
         {
             g_iNotecardLine=0;
             g_kNotecardReadRequest=llGetNotecardLine(g_sNotecardName,0);
-        }
-        //else llOwnerSay(g_sNotecardName+" notecard absent!");        
+        }       
     }
     
     link_message(integer iSender, integer iNum, string sStr, key kID) 
@@ -271,7 +246,6 @@ default
                 integer iPage = (integer)llList2String(lMenuParams, 2);
                 integer iAuth = (integer)llList2String(lMenuParams, 3);
                 string sMenuType = llList2String(g_lMenuIDs, iMenuIndex + 1);
-                
                 //remove stride from g_lMenuIDs
                 g_lMenuIDs = llDeleteSubList(g_lMenuIDs, iMenuIndex - 1, iMenuIndex - 2 + g_iMenuStride);     
                 
@@ -318,7 +292,6 @@ default
     changed (integer change){
         if (change & CHANGED_INVENTORY){
             if (g_iNotecardId != llGetInventoryKey(g_sNotecardName)){
-                //Debug("Reading styles card");
                 g_iNotecardId = llGetInventoryKey(g_sNotecardName);
                 if(g_iNotecardId){
                     g_lStyles=[];
@@ -326,7 +299,6 @@ default
                     g_iNotecardLine=0;
                     g_kNotecardReadRequest=llGetNotecardLine(g_sNotecardName,0);
                 }
-                //else llOwnerSay(g_sNotecardName+" notecard absent!");
             }            
         }
         if (change & CHANGED_OWNER) llResetScript();            

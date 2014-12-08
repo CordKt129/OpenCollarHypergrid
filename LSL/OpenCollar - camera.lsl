@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                              OpenCollar - camera                               //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -51,27 +51,21 @@ integer COMMAND_EVERYONE = 504;
 integer COMMAND_RLV_RELAY = 507;
 integer COMMAND_SAFEWORD = 510;  // new for safeword
 integer COMMAND_BLACKLIST = 520;
-
-//integer SEND_IM = 1000; deprecated.  each script should send its own IMs now.  This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to settings store
                             //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the settings script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from store
 integer LM_SETTING_EMPTY = 2004;//sent when a token has no value in the settings store
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
 
 string UPMENU = "BACK";
-//string MORE = ">";
 string g_sScript;
 
 CamMode(string sMode)
@@ -105,8 +99,6 @@ CamFocus(vector g_vCamPos, rotation g_rCamRot)
     //Calculate camera rotation increments
     //rotation rStep = (g_rCamRot - rStartRot);
     //rStep = <rStep.x / fSteps, rStep.y / fSteps, rStep.z / fSteps, rStep.s / fSteps>;
- 
- 
     float fCurrentStep = 0.0; //Loop through motion for fCurrentStep = current step, while fCurrentStep <= Total steps
     for(; fCurrentStep <= fSteps; ++fCurrentStep)
     {
@@ -189,10 +181,6 @@ string StrReplace(string sSrc, string sFrom, string sTo)
         integer iToPos = ~llSubStringIndex(sBuffer, sFrom);
         if(iToPos)
         {
-//            iBufPos -= iToPos;
-//            sSrc = llInsertString(llDeleteSubString(sSrc, iBufPos, iBufPos + iLen), iBufPos, sTo);
-//            iBufPos += iToLen;
-//            sBuffer = llGetSubString(sSrc, (-~(iBufPos)), 0x8000);
             sBuffer = llGetSubString(sSrc = llInsertString(llDeleteSubString(sSrc, iBufPos -= iToPos, iBufPos + iLen), iBufPos, sTo), (-~(iBufPos += iToLen)), 0x8000);
             jump loop;
         }
@@ -279,11 +267,6 @@ Notify(key kID, string sMsg, integer iAlsoNotifyWearer)
     }
 }
 
-Debug(string sStr)
-{
-    //llOwnerSay(llGetScriptName() + ": " + sStr);
-}
-
 SaveSetting(string sToken)
 {
     sToken = g_sScript + sToken;
@@ -334,8 +317,7 @@ integer UserCommand(integer iNum, string sStr, key kID) // here iNum: auth value
         {
             Notify(kID, "Sorry, cam settings have already been set by someone outranking you.", FALSE);
             return TRUE;
-        }   
-        Debug("g_iLastNum=" + (string)g_iLastNum);                        
+        }                         
         if (sValue == "clear")
         {
             ClearCam();
@@ -351,9 +333,7 @@ integer UserCommand(integer iNum, string sStr, key kID) // here iNum: auth value
         else if ((vector)sValue != ZERO_VECTOR && (vector)sValue2 != ZERO_VECTOR)
         {
             Notify(kID, "Setting camera focus to " + sValue + ".", TRUE);
-            //CamFocus((vector)sValue, (vector)sValue2);
             g_iLastNum = iNum;                        
-            Debug("newiNum=" + (string)iNum);
         }
         else
         {
@@ -465,7 +445,6 @@ default
                 list lMenuParams = llParseString2List(sStr, ["|"], []);
                 key kAv = (key)llList2String(lMenuParams, 0);          
                 string sMessage = llList2String(lMenuParams, 1);                                         
-                // integer iPage = (integer)llList2String(lMenuParams, 2); 
                 integer iAuth = (integer)llList2String(lMenuParams, 3); 
                 if (sMessage == UPMENU)
                 {

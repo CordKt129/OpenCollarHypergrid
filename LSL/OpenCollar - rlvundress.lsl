@@ -1,39 +1,28 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                            OpenCollar - rlvundress                             //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
-//gives menus for clothing and attachment, stripping and locking
-//Satomi Ahn, Medea Destiny
-
 string g_sSubMenu = "Un/Dress";
 string g_sParentMenu = "RLV";
-
-//list g_lChildren = ["Rem Clothing"]; //,"LockClothing","LockAttachment"];//,"LockClothing","UnlockClothing"];
 list g_lSubMenus= [];
 string SELECT_CURRENT = "*InFolder";
 string SELECT_RECURS= "*Recursively";
 list g_lRLVcmds = ["attach","detach","remoutfit", "addoutfit","remattach","addattach"];
-
-
 integer g_iSmartStrip=FALSE; //use @detachallthis isntead of remove
 string SMARTON="☐ SmartStrip";
 string SMARTOFF = "☒ SmartStrip";
-//string SMARTHELP = "Help";
 string g_sSmartHelpCard = "OpenCollar Guide";
 string g_sSmartToken="smartstrip";
-//key g_kSmartUser; //we store the last person to select if they are not wearer/owner, so that it can be switched on for current user without changing setting.
-
-
 list g_lSettings;//2-strided list in form of [option, param]
 string CTYPE = "collar";
 string WEARERNAME;
@@ -122,75 +111,54 @@ list ATTACH_POINTS = [//these are ordered so that their indices in the list corr
         ];
 
 //MESSAGE MAP
-//integer COMMAND_NOAUTH = 0;
 integer COMMAND_OWNER = 500;
 integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
 //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the httpdb script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
 integer LM_SETTING_EMPTY = 2004;//sent by httpdb script when a token has no value in the db
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
 integer RLV_CMD = 6000;
 integer RLV_REFRESH = 6001;//RLV plugins should reinstate their restrictions upon receiving this message.
 integer RLV_CLEAR = 6002;//RLV plugins should clear their restriction lists upon receiving this message.
 integer RLV_VERSION = 6003; //RLV Plugins can recieve the used rl viewer version upon receiving this message..
-
 integer RLV_OFF = 6100; // send to inform plugins that RLV is disabled now, no message or key needed
 integer RLV_ON = 6101; // send to inform plugins that RLV is enabled now, no message or key needed
-
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
 
-
 string UPMENU = "BACK";
-
 string ALL = " ALL";
 string TICKED = "☒ ";
 string UNTICKED = "☐ ";
-
 //variables for storing our various dialog ids
 key g_kMainID;
 key g_kClothID;
 key g_kAttachID;
 key g_kLockID;
 key g_kLockAttachID;
-
 integer g_iRLVTimeOut = 60;
-
 integer g_iClothRLV = 78465;
 integer g_iAttachRLV = 78466;
 integer g_iListener;
 key g_kMenuUser; // id of the avatar who will get the next menu after asynchronous response from RLV
 integer g_iMenuAuth; // auth level of that user
-
 integer g_iRLVOn = FALSE;
-
 list g_lLockedItems; // list of locked clothes
 list g_lLockedAttach; // list of locked attachmemts
-
 key g_kWearer;
 string g_sScript;
 string g_sWearerName;
 integer g_iAllLocked = 0;  //1=all clothes are locked on
-
-Debug(string sMsg)
-{
-    //llOwnerSay(llGetScriptName() + ": " + sMsg);
-}
 
 Notify(key kID, string sMsg, integer iAlsoNotifyWearer)
 {
@@ -213,7 +181,6 @@ key Dialog(key kRCPT, string sPrompt, list lChoices, list lUtilityButtons, integ
 
 MainMenu(key kID, integer iAuth)
 {
-    //string sPrompt = "\n\nNote: Keep in mind that mesh clothing is worn as attachments and in most cases together with alpha masks which are worn as clothing layers. It is recommended to explore the possibilities of #RLV Folders for a smooth un/dressing experience.\n";
     string sPrompt = "\nwww.opencollar.at/undress\n\nNOTE: Many clothes, and almost all mesh, mixes layers and attachments. With a properly set up #RLV folder";
     //sPrompt+=" (click "+SMARTHELP+" for info)";
     sPrompt+=", the SmartStrip option will allow these to be removed automatically. Otherwise, it is recommended to explore the #RLV Folders menu for a smoother un/dressing experience.";
@@ -234,16 +201,13 @@ MainMenu(key kID, integer iAuth)
     }
     if(g_iSmartStrip==TRUE)
     {
-        //sPrompt += "\nSmartStrip is on.";
         lButtons += SMARTOFF;
     }
     else
     {
         lButtons += SMARTON;
-        //sPrompt += "\nSmartStrip is off.";
     }
     lButtons += ["Rem Attachment","Lock Attachment"];
-    //lButtons+=SMARTHELP;
     g_kMainID = Dialog(kID, sPrompt, lButtons+g_lSubMenus, [UPMENU], 0, iAuth);
 }
 
@@ -360,7 +324,6 @@ DetachMenu(key kID, string sStr, integer iAuth)
 
 UpdateSettings()
 {    //build one big string from the settings list
-    //llOwnerSay("TP settings: " + llDumpList2String(g_lSettings, ","));
     integer iSettingsLength = llGetListLength(g_lSettings);
     if (iSettingsLength > 0)
     {
@@ -372,7 +335,6 @@ UpdateSettings()
         {
             list sOption=llParseString2List(llList2String(g_lSettings, n),[":"],[]);
             string sValue=llList2String(g_lSettings, n + 1);
-            //Debug(llList2String(g_lSettings, n) + "=" + sValue);
             lNewList += [llList2String(g_lSettings, n) + "=" + llList2String(g_lSettings, n + 1)];
             if (llGetListLength(sOption)==1 && llList2String(sOption,0)=="remoutfit")
             {
@@ -391,7 +353,6 @@ UpdateSettings()
         }
         //output that string to viewer
         llMessageLinked(LINK_SET, RLV_CMD, llDumpList2String(lNewList, ","), NULL_KEY);
-        Debug("Loaded locks: Cloth- " + llList2CSV(g_lLockedItems) + ": Attach- " + llList2CSV(g_lLockedAttach));
     }
 }
 
@@ -443,7 +404,6 @@ integer UserCommand(integer iNum, string sStr, key kID) // here iNum: auth value
     else if (iNum > COMMAND_EVERYONE || iNum < COMMAND_OWNER) return FALSE; // sanity check
     list lParams = llParseString2List(sStr, [":", "=", " "], []);
     string sCommand = llList2String(lParams, 0);
-    //Debug(sStr + " ## " + sCommand);
     if (sStr == "menu " + g_sSubMenu)
     {//give this plugin's menu to kID
         MainMenu(kID, iNum);
@@ -670,11 +630,6 @@ integer UserCommand(integer iNum, string sStr, key kID) // here iNum: auth value
         }
         }
     }
-    //else if (sStr == "refreshmenu")
-    //{
-    //    g_lSubMenus = [];
-    //    llMessageLinked(LINK_SET, MENUNAME_REQUEST, g_sSubMenu, "");
-    //}
     else if (sStr == "undress")
     {
         if (!g_iRLVOn)
@@ -718,11 +673,9 @@ default
         g_sScript = llStringTrim(llList2String(llParseString2List(llGetScriptName(), ["-"], []), 1), STRING_TRIM) + "_";
         g_kWearer = llGetOwner();
         WEARERNAME = llGetDisplayName(g_kWearer);
-        if (WEARERNAME == "???" || WEARERNAME == "") WEARERNAME == llKey2Name(g_kWearer);
+        if (WEARERNAME == "???" || WEARERNAME == "") 
+          WEARERNAME = llKey2Name(g_kWearer);
         g_sWearerName = WEARERNAME;
-        //llMessageLinked(LINK_SET, MENUNAME_REQUEST, g_sSubMenu, "");
-        //llSleep(1.0);
-        //llMessageLinked(LINK_SET, MENUNAME_RESPONSE, g_sParentMenu + "|" + g_sSubMenu, "");
     }
 
     link_message(integer iSender, integer iNum, string sStr, key kID)
@@ -748,7 +701,8 @@ default
             else {
                 g_kWearer = llGetOwner();
                 WEARERNAME = llGetDisplayName(g_kWearer);
-                if (WEARERNAME == "???" || WEARERNAME == "") WEARERNAME == llKey2Name(g_kWearer);
+                if (WEARERNAME == "???" || WEARERNAME == "") 
+                  WEARERNAME = llKey2Name(g_kWearer);
             }
         }
         else if (iNum == LM_SETTING_RESPONSE)
@@ -784,7 +738,6 @@ default
             g_iRLVOn = TRUE;
             if(g_iAllLocked > 0)       //is everything locked?
                 DoLockAll(kID);  //lock everything on a RLV_REFRESH
-
             UpdateSettings();
         }
         else if (iNum == RLV_CLEAR)
@@ -860,10 +813,6 @@ default
                     { //send the RLV command to remove it.
                     
                         UserCommand(iAuth,"strip all",kAv); //See stuff in UserCommand. If we use smartstrip for all, then we'd jump to that here to save duplication, but otherwise it's a single LM, better to do it here than hit UserCommand.
-                                            
-                       // llMessageLinked(LINK_SET, RLV_CMD,  "remoutfit=force", NULL_KEY);
-                        //Return menu
-                        //sleep fof a sec to let things detach
                         llSleep(0.5);
                         QueryClothing(kAv, iAuth);
                     }
@@ -873,21 +822,6 @@ default
                         llSleep(0.5);
                         QueryClothing(kAv, iAuth);
                     }
-                        
-                    /* Moving this to UserCommand to allow "strip" chat command
-                    else
-                    { //we got a cloth point.
-                        sMessage = llToLower(sMessage);
-                        //send the RLV command to remove it.
-                        if(kAv==g_kSmartUser || g_iSmartStrip==TRUE){
-                        llMessageLinked(LINK_SET, RLV_CMD , "detachallthis:" + sMessage + "=force", NULL_KEY);}
-                        llMessageLinked(LINK_SET, RLV_CMD,  "remoutfit:" + sMessage + "=force", NULL_KEY);
-                        //Return menu
-                        //sleep fof a sec to let things detach
-                        llSleep(0.5);
-                        QueryClothing(kAv, iAuth);
-                    }
-                    */
                 }
                 else if (kID == g_kAttachID)
                 {
@@ -950,12 +884,11 @@ default
         llListenRemove(g_iListener);
         llSetTimerEvent(0.0);
         if (iChan == g_iClothRLV)
-        {  // llOwnerSay(sMessage);
+        { 
             ClothingMenu(g_kMenuUser, sMessage, g_iMenuAuth);
         }
         else if (iChan == g_iAttachRLV)
         {
-           // llOwnerSay(sMessage);
             DetachMenu(g_kMenuUser, sMessage, g_iMenuAuth);
         }
     }

@@ -1,22 +1,20 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                            OpenCollar - shininess                              //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
-
 //based on OpenCollar - texture
 
 string g_sParentMenu = "Appearance";
 string g_sSubMenu = "Shininess";
-
 string g_sIgnoreType = "notexture" ;  //  or "noshiny" if you want use alternate prims descriptions;
 
 //MESSAGE MAP
@@ -26,52 +24,36 @@ integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
-//integer SEND_IM = 1000; deprecated.  each script should send its own IMs now.  This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;
 integer LM_SETTING_REQUEST = 2001;
 integer LM_SETTING_RESPONSE = 2002;
 integer LM_SETTING_DELETE = 2003;
 integer LM_SETTING_EMPTY = 2004;
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
-
 integer TOUCH_REQUEST = -9500;
 integer TOUCH_CANCEL = -9501;
 integer TOUCH_RESPONSE = -9502;
 integer TOUCH_EXPIRE = -9503;
 
 string CTYPE = "collar";
-
 string UPMENU = "BACK";
-
 list g_lShiny = ["none","low","medium","high"];
 string ALL = "All" ;
-
 list g_lElements;
 list g_lShinySettings;
-
 list g_lButtons;
-
 list g_lMenuIDs;
 key g_kTouchID;
-
 integer g_iAppLock = FALSE;
 string g_sAppLockToken = "Appearance_Lock";
-
 string g_sCurrentElement = "";
-
 key g_kWearer;
-
 string g_sScript ;
-
 string GetScriptID()
 {
     // strip away "OpenCollar - " leaving the script's individual name
@@ -142,7 +124,6 @@ BuildElementList()
 {
     integer n;
     integer iLinkCount = llGetNumberOfPrims();
-
     //root prim is 1, so start at 2
     for (n = 2; n <= iLinkCount; n++)
     {
@@ -213,15 +194,12 @@ UpdateElements()
     }while (i < elements ) ;
 }
 
-
 // returns TRUE if eligible (AUTHED link message number)
 integer UserCommand(integer iNum, string sStr, key kID) // here iNum: auth value, sStr: user command, kID: avatar id
 {
     if (iNum > COMMAND_WEARER || iNum < COMMAND_OWNER) return FALSE; // sanity check
-
     list lParams = llParseString2List(sStr, [" "], []);
     string sCommand = llList2String(lParams, 0);
-
     if (sStr == "menu "+ g_sSubMenu || sStr == "shiny")
     {
         if (kID!=g_kWearer && iNum!=COMMAND_OWNER)
@@ -262,7 +240,6 @@ integer UserCommand(integer iNum, string sStr, key kID) // here iNum: auth value
     {
         if (iNum == COMMAND_OWNER) g_iAppLock = llList2Integer(lParams, 1);
     }
-
     return TRUE;
 }
 
@@ -275,24 +252,6 @@ string SplitTokenValue(string in, integer slot)
     else if (slot==2) out = llGetSubString(in, llSubStringIndex(in, "=")+1, -1);
     return out ;
 }
-
-/*
-RequestSettings()
-{
-    // restore settings from DB after reset script
-    llMessageLinked(LINK_THIS, LM_SETTING_REQUEST, g_sAppLockToken, "");
-
-    // request settings for all Elements
-    integer n;
-    integer iStop = llGetListLength(g_lElements);
-    for (n = 0; n < iStop; n++)
-    {
-        string sElement = llList2String(g_lElements, n);
-        llMessageLinked(LINK_THIS, LM_SETTING_REQUEST, g_sScript + sElement, "");
-    }
-}
-*/
-
 
 default
 {
@@ -307,7 +266,6 @@ default
         g_kWearer = llGetOwner();
         g_sScript = GetScriptID();
         BuildElementList();
-        //RequestSettings(); // request settings from DB
     }
 
     link_message(integer iSender, integer iNum, string sStr, key kID)

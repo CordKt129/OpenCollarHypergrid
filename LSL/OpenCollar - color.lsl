@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                              OpenCollar - color                                //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -59,51 +59,38 @@ list g_lColorSettings;
 
 string g_sParentMenu = "Appearance";
 string g_sSubMenu = "Colors";
-
 list g_lColors;
 integer g_iStridelength = 2;
 integer g_iLength;
 list g_lButtons;
 list g_lNewButtons;
-
 list g_lMenuIDs;
 key g_kTouchID;
-
 integer g_iAppLock = FALSE;
 string g_sAppLockToken = "Appearance_Lock";
 
 //MESSAGE MAP
-//integer COMMAND_NOAUTH = 0;
 integer COMMAND_OWNER = 500;
 integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
-//integer SEND_IM = 1000; deprecated.  each script should send its own IMs now.  This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
 //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the httpdb script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
 integer LM_SETTING_EMPTY = 2004;//sent when a token has no value in the httpdb
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
-
 integer TOUCH_REQUEST = -9500;
 integer TOUCH_CANCEL = -9501;
 integer TOUCH_RESPONSE = -9502;
 integer TOUCH_EXPIRE = -9503;
-
-
-//5000 block is reserved for IM slaves
 
 string UPMENU = "BACK";
 string CTYPE = "collar";
@@ -180,7 +167,6 @@ BuildElementList()
 {
     integer n;
     integer iLinkCount = llGetNumberOfPrims();
-
     //root prim is 1, so start at 2
     for (n = 2; n <= iLinkCount; n++)
     {
@@ -188,7 +174,6 @@ BuildElementList()
         if (!(~llListFindList(g_lElements, [sElement])) && sElement != "nocolor")
         {
             g_lElements += [sElement];
-            //llSay(0, "added " + sElement + " to elements");
         }
     }
 }
@@ -203,7 +188,6 @@ SetElementColor(string sElement, vector vColor)
         if (thiselement == sElement)
         {
             //set link to new color
-            //llSetLinkPrimitiveParams(n, [PRIM_COLOR, ALL_SIDES, color, 1.0]);
             llSetLinkColor(n, vColor, ALL_SIDES);
         }
     }
@@ -221,7 +205,6 @@ SetElementColor(string sElement, vector vColor)
     }
     //save to settings
     llMessageLinked(LINK_SET, LM_SETTING_SAVE, g_sScript + sElement + "=" + sStrColor, "");
-    //g_sCurrentElement = "";
 }
 
 
@@ -257,10 +240,6 @@ default
         g_kWearer = llGetOwner();
         //loop through non-root prims, build element list
         BuildElementList();
-        // no more needed
-        // we need to unify the initialization of the menu system for 3.5
-        //llSleep(1.0);
-        //llMessageLinked(LINK_SET, MENUNAME_RESPONSE, g_sParentMenu + "|" + g_sSubMenu, "");
     }
 
     link_message(integer iSender, integer iNum, string sStr, key kID)
@@ -408,7 +387,6 @@ default
                     g_lColors = [];
                     g_sCurrentCategory = sMessage;
                     integer iIndex = llListFindList(g_lCategories,[sMessage]);
-                    //sDatakID = llGetNotecardLine("colors-" + g_sCurrentCategory, g_iLine);
                     //we'll have gotten several lines like "Chartreuse|<0.54118, 0.98431, 0.09020>"
                     //parse that into 2-strided list of colorname, colorvector
                     g_lColors = llParseString2List(llList2String(g_lAllColors, iIndex), ["\n", "|"], []);
@@ -421,11 +399,7 @@ default
                     //found a color, now set it
                     integer iIndex = llListFindList(g_lColors, [sMessage]);
                     vector vColor = (vector)llList2String(g_lColors, iIndex + 1);
-                    //llSay(0, "color = " + (string)vColor);
-                    //loop through links, setting color if element type matches what we're changing
-                    //root prim is 1, so start at 2
                     SetElementColor(g_sCurrentElement, vColor);
-                    //ElementMenu(kID);
                     ColorMenu(kAv, iAuth);
                 }
             }

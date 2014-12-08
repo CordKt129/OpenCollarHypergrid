@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                               OpenCollar - timer                               //
-//                                 version 3.993                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +23,6 @@ integer g_iLastRez;
 integer n;//for loops
 string g_sMessage;
 integer MAX_TIME=0x7FFFFFFF;
-
 integer ATTACHMENT_COMMAND = 602;
 integer ATTACHMENT_FORWARD = 610;
 //these can change
@@ -31,19 +30,14 @@ integer REAL_TIME=1;
 integer REAL_TIME_EXACT=5;
 integer ON_TIME=3;
 integer ON_TIME_EXACT=7;
-
 string CTYPE = "collar";
-
 integer g_iInterfaceChannel;
 // end time keeper
-
 string g_sSubMenu = "Timer";
 string g_sParentMenu = "Apps";
-
 key g_kMenuID;
 key g_kOnMenuID;
 key g_kRealMenuID;
-
 key g_kWearer;
 
 list g_lLocalButtons = ["RL","Online"];
@@ -55,7 +49,6 @@ integer g_iOnTimeUpAt;
 integer g_iRealRunning;
 integer g_iRealSetTime;
 integer g_iRealTimeUpAt;
-
 integer g_iCollarLocked;
 integer g_iUnlockCollar = 0;
 integer g_iClearRLVRestions = 0;
@@ -63,56 +56,26 @@ integer g_iUnleash = 0;
 integer g_iBoth = 0;
 integer g_iWhoCanChangeTime = 504;
 integer g_iWhoCanChangeLeash = 504;
-
 integer g_iTimeChange;
-
 list lButtons;
 
 integer COMMAND_OWNER = 500;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
 integer COMMAND_WEARERLOCKEDOUT = 521;
-
 integer LM_SETTING_SAVE = 2000;
 integer LM_SETTING_RESPONSE = 2002;
 integer LM_SETTING_DELETE = 2003;
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 
 // Added by WhiteFire
 integer TIMER_EVENT = -10000; // str = "start" or "end". For start, either "online" or "realtime".
-
 integer WEARERLOCKOUT = 620;
-
 string UPMENU = "BACK";
-
-/*
-integer g_iProfiled;
-Debug(string sStr) {
-    //if you delete the first // from the preceeding and following  lines,
-    //  profiling is off, debug is off, and the compiler will remind you to 
-    //  remove the debug calls from the code, we're back to production mode
-    if (!g_iProfiled){
-        g_iProfiled=1;
-        llScriptProfiler(1);
-    }
-    llOwnerSay(llGetScriptName() + "(min free:"+(string)(llGetMemoryLimit()-llGetSPMaxMemory())+")["+(string)llGetFreeMemory()+"] :\n" + sStr);
-}
-*/
-
-key Dialog(key kRCPT, string sPrompt, list lChoices, list lUtilityButtons, integer iPage, integer iAuth)
-{
-    key kID = llGenerateKey();
-    llMessageLinked(LINK_SET, DIALOG, (string)kRCPT + "|" + sPrompt + "|" + (string)iPage + "|" + llDumpList2String(lChoices, "`") + "|" + llDumpList2String(lUtilityButtons, "`") + "|" + (string)iAuth, kID);
-    //Debug("Made menu.");
-    return kID;
-} 
 
 Notify(key kID, string sMsg, integer iAlsoNotifyWearer)
 {
@@ -125,18 +88,23 @@ Notify(key kID, string sMsg, integer iAlsoNotifyWearer)
     }
 }
 
+key Dialog(key kRCPT, string sPrompt, list lChoices, list lUtilityButtons, integer iPage, integer iAuth)
+{
+    key kID = llGenerateKey();
+    llMessageLinked(LINK_SET, DIALOG, (string)kRCPT + "|" + sPrompt + "|" + (string)iPage + "|" 
+    + llDumpList2String(lChoices, "`") + "|" + llDumpList2String(lUtilityButtons, "`") + "|" + (string)iAuth, kID);
+    return kID;
+} 
+
 DoMenu(key keyID, integer iAuth)
 {
     if (keyID)
     {
-        //fnord
     }
     else
     {
         return;
     }
-    //Debug("timeremaning:"+(string)(g_iOnTimeUpAt-g_iOnTime));
-    
     string sPrompt = "\n A frozen pizza takes ~12 min to bake.\n";
     list lMyButtons = g_lLocalButtons + lButtons;
 
@@ -250,13 +218,11 @@ string Int2Time(integer sTime)
     sTime = (sTime-iMins)/60;
     integer iHours=sTime%24;
     integer iDays = (sTime-iHours)/24;
-    
     //this is the onley line that needs changing...
     return ( (string)iDays+" days "+
         llGetSubString("0"+(string)iHours,-2,-1) + ":"+
         llGetSubString("0"+(string)iMins,-2,-1) + ":"+
         llGetSubString("0"+(string)iSecs,-2,-1) );
-    //return (string)iDays+":"+(string)iHours+":"+(string)iMins+":"+(string)iSecs;
 }
 
 TimerFinish()
@@ -272,7 +238,7 @@ TimerFinish()
     }
     if(g_iClearRLVRestions)
     {
-        llMessageLinked(LINK_THIS, COMMAND_OWNER, "clear", g_kWearer);
+        llMessageLinked(LINK_THIS, COMMAND_OWNER, "RESET", g_kWearer);
         if(!g_iUnlockCollar && g_iCollarLocked)
         {
             llSleep(2);
@@ -289,7 +255,6 @@ TimerFinish()
     g_iOnTimeUpAt=g_iRealTimeUpAt=0;
     g_iWhoCanChangeTime=504;
     llOwnerSay("Yay! Timer expired!");
-    
     llMessageLinked(LINK_THIS, TIMER_EVENT, "end", "");
 }
 
@@ -329,7 +294,6 @@ integer UserCommand(integer iNum, string sStr, key kID)
     if (llToLower(sStr) == "timer" || sStr == "menu "+g_sSubMenu) DoMenu(kID, iNum);
     else if(llGetSubString(sStr, 0, 5) == "timer ")
     {
-        //Debug(sStr);
         string sMsg=llGetSubString(sStr, 6, -1);
         //we got a response for something we handle locally
         if (sMsg == "RL") DoRealMenu(kID, iNum);
@@ -562,26 +526,31 @@ integer UserCommand(integer iNum, string sStr, key kID)
     return TRUE;
 }
 
-
-default {
-    on_rez(integer iParam) {
-        g_iLastTime=g_iLastRez=llGetUnixTime();
-        llRegionSayTo(g_kWearer, g_iInterfaceChannel, "timer|sendtimers");
-        if (g_iRealRunning == 1 || g_iOnRunning == 1) {
-            llMessageLinked(LINK_THIS, WEARERLOCKOUT, "on", "");
-        }
-    }
-    state_entry() {
-        //llSetMemoryLimit(65536);  //this script needs to be profiled, and its memory limited
+default
+{
+    state_entry()
+    {
         g_iLastTime=llGetUnixTime();
         llSetTimerEvent(1);
         g_kWearer = llGetOwner();
         g_iInterfaceChannel = (integer)("0x" + llGetSubString(g_kWearer,30,-1));
-        if (g_iInterfaceChannel > 0) g_iInterfaceChannel = -g_iInterfaceChannel;
+        if (g_iInterfaceChannel > 0)
+        {
+              g_iInterfaceChannel = -g_iInterfaceChannel;
+        }
         g_iFirstOnTime=MAX_TIME;
         g_iFirstRealTime=MAX_TIME;
         llRegionSayTo(g_kWearer, g_iInterfaceChannel, "timer|sendtimers");
-        //Debug("Starting");
+        //end of timekeeper
+    }
+    on_rez(integer iParam)
+    {
+        g_iLastTime=g_iLastRez=llGetUnixTime();
+        llRegionSayTo(g_kWearer, g_iInterfaceChannel, "timer|sendtimers");
+        if (g_iRealRunning == 1 || g_iOnRunning == 1)
+        {
+            llMessageLinked(LINK_THIS, WEARERLOCKOUT, "on", "");
+        }
     }
 
     link_message(integer iSender, integer iNum, string sStr, key kID)
@@ -589,7 +558,6 @@ default {
         list info  = llParseString2List (sStr, ["|"], []);
         if(iNum==ATTACHMENT_FORWARD && llList2String(info, 0)=="timer")//request for us
         {
-            //Debug(sStr);
             string sCommand = llList2String(info, 1);
             integer type = llList2Integer(info, 2);
             if(sCommand=="settimer")
@@ -778,7 +746,6 @@ default {
             //could store which is need but if both are trigered it will have to send both anyway I prefer not to check for that.
             g_sMessage="timer|timeis|"+(string)ON_TIME+"|"+(string)g_iOnTime;
             llRegionSayTo(g_kWearer, g_iInterfaceChannel, g_sMessage);
-            
             g_iFirstOnTime=MAX_TIME;
             g_iTimesLength=llGetListLength(g_lTimes);
             for(n = 0; n < g_iTimesLength; n = n + 2)// send notice and find the next time.
@@ -802,7 +769,6 @@ default {
             //could store which is need but if both are trigered it will have to send both anyway I prefer not to check for that.
             g_sMessage="timer|timeis|"+(string)REAL_TIME+"|"+(string)g_iCurrentTime;
             llRegionSayTo(g_kWearer, g_iInterfaceChannel, g_sMessage);
-             
             g_iFirstRealTime=MAX_TIME;
             g_iTimesLength=llGetListLength(g_lTimes);
             for(n = 0; n < g_iTimesLength; n = n + 2)// send notice and find the next time.
@@ -833,15 +799,4 @@ default {
         }
         g_iLastTime=g_iCurrentTime;
     }
-    
-/*
-    changed(integer iChange) {
-        if (iChange & CHANGED_REGION) {
-            if (g_iProfiled) {
-                llScriptProfiler(1);
-                Debug("profiling restarted");
-            }
-        }
-    }
-*/
 }

@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                              OpenCollar - garble                               //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -20,27 +20,15 @@ integer COMMAND_OWNER = 500;
 integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
-//integer COMMAND_EVERYONE = 504;
-//integer COMMAND_OBJECT = 506; 
-//integer COMMAND_RLV_RELAY = 507;
 integer COMMAND_SAFEWORD = 510;
-//integer COMMAND_BLACKLIST = 520;
-//integer COMMAND_WEARERLOCKEDOUT = 521;
-
-// messages for storing and retrieving values in the settings script
 integer LM_SETTING_SAVE = 2000;
 integer LM_SETTING_REQUEST = 2001;
 integer LM_SETTING_RESPONSE = 2002;
 integer LM_SETTING_DELETE = 2003;
 integer LM_SETTING_EMPTY = 2004;
-
-
-// messages for creating OC menu structure
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
-// messages for RLV commands
 integer RLV_CMD = 6000;
 integer RLV_REFRESH = 6001;//RLV plugins should reinstate their restrictions upon receiving this message.
 integer RLV_CLEAR = 6002;//RLV plugins should clear their restriction lists upon receiving this message.
@@ -62,12 +50,6 @@ integer giGL;
 integer bOn;
 integer g_iBinder;
 key g_kBinder;
-
-Debug(string _m)
-{
-    if (!g_nDebugMode) return;
-    llOwnerSay(llGetScriptName() + ": " + _m);
-}
 
 Notify(key _k, string _m, integer NotifyWearer)
 {
@@ -101,7 +83,6 @@ SetPrefix(string in)
         string init = llGetSubString(gsWear, 0, 0) + llGetSubString(gsWear, i, i);
         gsPref = llToLower(init);
     }
-    Debug("Prefix set to: " + gsPref);
 }
 string garble(string _i)
 {
@@ -188,14 +169,14 @@ default
     {
         gkWear = llGetOwner();
         WEARERNAME = llGetDisplayName(gkWear);
-        if (WEARERNAME == "???" || WEARERNAME == "") WEARERNAME == llKey2Name(gkWear);
+        if (WEARERNAME == "???" || WEARERNAME == "") 
+            WEARERNAME = llKey2Name(gkWear);
         gsWear = WEARERNAME;
         
         giCRC = llRound(llFrand(499) + 1);
         if (bOn) release(gkWear,0);
         llMessageLinked(LINK_THIS, LM_SETTING_REQUEST, "listener_safeword", "");
         llMessageLinked(LINK_THIS, LM_SETTING_REQUEST, GetScriptID() + "Binder", "");
-        //llSleep(1.0);
     }
     listen(integer _c, string _n, key _k, string _m)
     {
@@ -245,18 +226,21 @@ default
             else llMessageLinked(LINK_SET, RLV_CMD, "chatshout=y,sendim=y,redirchat:" + (string)giCRC + "=rem", NULL_KEY);
         }
         else if (iM == RLV_CLEAR) release(kM,iL);
-        else if ((iM == LM_SETTING_RESPONSE || iM == LM_SETTING_DELETE) 
-                && llSubStringIndex(sM, "Global_WearerName") == 0 ) {
+        else if ((iM == LM_SETTING_RESPONSE || iM == LM_SETTING_DELETE) && llSubStringIndex(sM, "Global_WearerName") == 0 )
+        {
             integer iInd = llSubStringIndex(sM, "=");
             string sValue = llGetSubString(sM, iInd + 1, -1);
             //We have a broadcasted change to WEARERNAME to work with
-            if (iM == LM_SETTING_RESPONSE) {
+            if (iM == LM_SETTING_RESPONSE) 
+            {
                 WEARERNAME = sValue;
                 gsWear = WEARERNAME;
             }
-            else {
+            else 
+            {
                 WEARERNAME = llGetDisplayName(llGetOwner());
-                if (WEARERNAME == "???" || WEARERNAME == "") WEARERNAME == llKey2Name(llGetOwner());
+                if (WEARERNAME == "???" || WEARERNAME == "")
+                    WEARERNAME = llKey2Name(llGetOwner());
                 gsWear = WEARERNAME;
             }
         }
