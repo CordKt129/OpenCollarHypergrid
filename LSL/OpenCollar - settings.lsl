@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                             OpenCollar - settings                              //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -59,9 +59,7 @@ integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to settings store
 //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
@@ -69,11 +67,9 @@ integer LM_SETTING_RESPONSE = 2002;//the settings script will send responses on 
 integer LM_SETTING_DELETE = 2003;//delete token from store
 integer LM_SETTING_EMPTY = 2004;//sent when a token has no value in the store
 integer LM_SETTING_REQUEST_NOCACHE = 2005;
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
@@ -85,13 +81,9 @@ string DESIGN_ID;
 list DESIGN_SETTINGS;
 list USER_SETTINGS;
 integer USER_PREF = FALSE; // user switch
-
 integer SAY_LIMIT = 1024; // lsl "say" string limit
 integer CARD_LIMIT = 255; // lsl card-line string limit
 string ESCAPE_CHAR = "\\"; // end of card line, more value left for token
-
-
-//Debug (string str) { llOwnerSay(llGetScriptName() + ": " + str);}
 
 Notify(key kID, string sMsg, integer iAlsoNotifyWearer)
 {
@@ -219,7 +211,7 @@ DumpGroupSettings(string group, key id)
         {
             tok = SplitToken(tok, 1);
             val = llList2String(DESIGN_SETTINGS, i + 1);
-            if (~x=llListFindList(out, [tok])) out = llListReplaceList(out, [val], x + 1, x + 1);
+            if (~x == llListFindList(out, [tok])) out = llListReplaceList(out, [val], x + 1, x + 1);
             else out += [tok, val];
         }
     }
@@ -232,7 +224,7 @@ DumpGroupSettings(string group, key id)
         {
             tok = SplitToken(tok, 1);
             val = llList2String(USER_SETTINGS, i + 1);
-            if (~x=llListFindList(out, [tok])) out = llListReplaceList(out, [val], x + 1, x + 1);
+            if (~x == llListFindList(out, [tok])) out = llListReplaceList(out, [val], x + 1, x + 1);
             else out += [tok, val];
         }
     }
@@ -329,15 +321,8 @@ list Add2OutList(list in)
             }
         }
     }
-
     // If there's anything left in the buffer, flush it to output.
     if ( llStringLength(buffer) ) out += [buffer] ;
-    
-    // Possibly this line was supposed to reallocate the list to keep it from taking too
-    // much space. Logically, this is a 'do nothing' line - replacing the last item in 
-    // the 'out' list with the last item in the out list, with no changes.
-//////    out = llListReplaceList(out, [llList2String(out, -1)], -1, -1);
-
     return out;
 }
 
@@ -375,7 +360,6 @@ DumpCache(key id)
 
 SendValues()
 {
-    //Debug("Sending all settings");
     //loop through and send all the settings
     integer n = 0;
     string tok;
@@ -499,7 +483,6 @@ default
             SendValues();    
         }
         else llResetScript();
-        
         // check alpha
         if (llGetAlpha(ALL_SIDES) > 0) STEALTH = FALSE;
         else STEALTH = TRUE;
@@ -523,7 +506,6 @@ default
                 // first we can filter out & skip blank lines & remarks
                 data = llStringTrim(data, STRING_TRIM_HEAD);
                 if (data == "" || llGetSubString(data, 0, 0) == "#") jump nextline;
-                
                 // check for "continued" line pieces
                 if ( llStringLength(split_line) ) 
                 { 
@@ -623,54 +605,7 @@ default
                     UserCommand(iAuth,llGetSubString(g_sScript,0,-2)+" "+sMessage,kAv);
                 }
                 else Notify(kAv,"Sorry, only Owners & Wearers may acces this feature.",FALSE);
-                                
-                //if (sMessage == PREFDESI)
-                //{
-                //    USER_PREF = FALSE;
-                //    USER_SETTINGS = SetSetting(USER_SETTINGS, g_sScript + "Pref", "Designer");
-                //}
-                //else if (sMessage == PREFUSER)
-                //{
-                //    USER_PREF = TRUE;
-                //    USER_SETTINGS = SetSetting(USER_SETTINGS, g_sScript + "Pref", "User");
-                //}
-                //else if (sMessage == DUMPCACHE)
-                //{
-                //    if (iAuth == COMMAND_OWNER || iAuth == COMMAND_WEARER) DumpCache(kAv);
-                //    else Notify(kAv, "Only Owners & Wearer may access this feature.", FALSE);
-                //}
-                //else if (sMessage == LOADCARD)
-                //{
-                //    if(kAv==g_kWearer)
-                //    {
-                //        defaultsline = 0;
-                //        defaultslineid = llGetNotecardLine(defaultscard, defaultsline);
-                //    }
-                //    else Notify(kAv,"Only the collar wearer may reload defaults.",FALSE);
-                //}
-                // else if (sMessage == REFRESH_MENU)
-                //{
-                //     if(iAuth==COMMAND_OWNER||iAuth==COMMAND_WEARER)
-                //   {
-                //       llDialog(kAv, "\n\nRebuilding menu.\n\nThis may take several seconds.", [], -341321); 
-                //        llResetOtherScript(g_sMenuScript);
-                //    }
-                //    else Notify(kAv,"Only the collar wearer and owners may refresh menus.",FALSE);
-                //}
-                
                 DoMenu(kAv, iAuth);
-            }
-        }
-        //else if (iNum == MENUNAME_REQUEST && sStr == PARENT_MENU)
-        //{
-        //    llMessageLinked(LINK_SET, MENUNAME_RESPONSE, PARENT_MENU + "|" + SUBMENU, "");
-        //}
-        else if (iNum == DIALOG_TIMEOUT)
-        {
-            // timeout from menu system, you do not have to react on this, but you can
-            if (id == g_kMenuID)
-            {
-                //Debug("The user was to slow or lazy, we got a timeout!");
             }
         }
     }
@@ -679,7 +614,6 @@ default
     {
         if (change & CHANGED_COLOR)
         {
-            //llSleep(0.1); // not sure for need this sleep...
             {
                 if (llGetAlpha(ALL_SIDES) > 0) STEALTH = FALSE;
                 else STEALTH = TRUE;

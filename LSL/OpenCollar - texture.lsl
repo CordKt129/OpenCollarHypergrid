@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                             OpenCollar - texture                               //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -25,7 +25,6 @@ string CTYPE = "collar";
 integer iLength;
 list lButtons;
 list g_lNewButtons;//is this used? 2010/01/14 Starship
-
 list g_lNotecardTextures;
 list g_lNotecardTextureKeys;
 integer g_iNotecardLine;
@@ -33,46 +32,34 @@ key g_kTextureCardUUID;
 string g_sTextureCard="textures";
 string g_sDefTextureCard="textures";
 key g_kNotecardRead;
-
-//dialog handles
 key g_kElementID;
 key g_ktextureID;
-//touch request handle
 key g_kTouchID;
-
 integer g_iAppLock = FALSE;
 string g_sAppLockToken = "Appearance_Lock";
 
 //MESSAGE MAP
-//integer COMMAND_NOAUTH = 0;
 integer COMMAND_OWNER = 500;
 integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
-//integer SEND_IM = 1000; deprecated. each script should send its own IMs now. This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
 //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the httpdb script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
 integer LM_SETTING_EMPTY = 2004;//sent when a token has no value in the httpdb
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
-
 integer TOUCH_REQUEST = -9500;
 integer TOUCH_CANCEL = -9501;
 integer TOUCH_RESPONSE = -9502;
 integer TOUCH_EXPIRE = -9503;
-//5000 block is reserved for IM slaves
 
 string UPMENU = "BACK";
 
@@ -84,11 +71,6 @@ string SEPARATOR = "~";
 // set FALSE to enable basic AND special texture names for all elements, TRUE for ONLY special textures per element.
 // TRUE will still use basic textures for a given element WHEN that element has no special textures named in the collar.
 integer EXCLUSIVE = TRUE;
-
-Debug(string sStr)
-{
-    //llOwnerSay(llGetScriptName() + ": " + sStr);
-}
 
 loadNotecardTextures()
 {
@@ -105,7 +87,6 @@ loadNotecardTextures()
     g_kTextureCardUUID=llGetInventoryKey(g_sTextureCard);
     g_kNotecardRead=llGetNotecardLine(g_sTextureCard,g_iNotecardLine);
 }
-
 
 string GetDefaultTexture(string ele)
 {
@@ -136,7 +117,6 @@ string GetLongName(string ele, string sTex) // find the full texture name given 
         test = llList2String(work, l);
         if (~llSubStringIndex(test, sTex))
         {
-            //if (!GetElementHasTexs(ele) || ~llSubStringIndex(test, llToLower(ele) + SEPARATOR)) return test;
             if (!GetElementHasTexs(ele) || ~llSubStringIndex(test, ele + SEPARATOR)) return test; //KW
         }
     }
@@ -171,7 +151,6 @@ list BuildTextureNames(integer short) // set short TRUE to lop off all prefixes 
 
 integer GetElementHasTexs(string ele) // check if textures exist with labels for the specified element
 {
-    //ele = llToLower(ele) + SEPARATOR;
     ele = ele + SEPARATOR; //KW
     integer l = 0;
     integer max=llGetInventoryNumber(INVENTORY_TEXTURE);
@@ -193,7 +172,6 @@ list BuildTexButtons()
     list tex = BuildTextureNames(FALSE);
     list out = [];
     if (~llListFindList(g_lTextureDefaults, [s_CurrentElement])) out = ["Default"];
-    //string ele = llToLower(s_CurrentElement) + SEPARATOR;
     string ele = s_CurrentElement + SEPARATOR;//KW
     string but;
     integer l = 0;
@@ -350,7 +328,6 @@ integer UserCommand(integer iNum, string sStr, key kID)
     else if (sStr == "reset" && (iNum == COMMAND_OWNER || kID == g_kWearer))
     {
         //clear saved settings
-        //llMessageLinked(LINK_SET, LM_SETTING_DELETE, g_sDBToken, "");
         llResetScript();
     }
     else if (kID != g_kWearer && iNum != COMMAND_OWNER) return TRUE;
@@ -436,7 +413,6 @@ default
         g_kWearer = llGetOwner();
         g_sScript = llStringTrim(llList2String(llParseString2List(llGetScriptName(), ["-"], []), 1), STRING_TRIM) + "_";
         loadNotecardTextures();
-
         //loop through non-root prims, build element list
         integer n;
         integer iLinkCount = llGetNumberOfPrims();
@@ -447,7 +423,6 @@ default
             if (!(~llListFindList(g_lElements, [sElement])) && sElement != "notexture")
             {
                 g_lElements += [sElement];
-                //llSay(0, "added " + sElement + " to g_lElements");
             }
         }
     }
@@ -577,13 +552,6 @@ default
             }
         }
     }
-
-    on_rez(integer iParam)
-    {
-        //llResetScript();
-    }
-    //Is this necessary for anything? Removing for now, we'll see.
-    //yeah it was necessary cos our menu structuring is MESSED UP and relies on all sorts of scripts resetting. This should do the trick instead, however.
 
     changed(integer change)
     {

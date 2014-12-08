@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                              OpenCollar - cleanup                              //
-//                                 version 3.958                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -25,12 +25,7 @@ list garbage = [
 // Allow this many seconds to hear back from child prims before
 // removing self from root prim inventory
 integer deathtimer = 3;
-
 integer UPDATE = 10001;
-
-Debug(string str) {
-    //llOwnerSay(llGetScriptName() + ": " + str);
-}
 
 // Function that will look at all items in the prim and delete any
 // whose names contain the pattern.
@@ -44,7 +39,6 @@ DelMatchingItems(string pattern) {
             && name != llGetScriptName()) {
             // found the item we're looking for.  Remove!
             llRemoveInventory(name);
-            Debug("found " + name);
         }
     }           
 }
@@ -60,14 +54,11 @@ DelItems(list items) {
 
 default
 {
-    state_entry() {
-        Debug("starting");    
+    state_entry() { 
         // Don't run cleanup if placed in an updater
         if (llSubStringIndex(llGetObjectName(), "Updater") != -1) {
-            Debug("In an updater.  Sleeping.");
             llSetScriptState(llGetScriptName(), FALSE);
         }    
-
         key transKey="bd7d7770-39c2-d4c8-e371-0342ecf20921";
         integer primNumber=llGetNumberOfPrims()+1;
         while (primNumber--){
@@ -85,18 +76,16 @@ default
         if (llGetLinkNumber() > 1) {
             // in a child prim.  
             // Since we already cleaned up, we can just die now
-            llRemoveInventory(llGetScriptName());
+//            llRemoveInventory(llGetScriptName());//stops us deleting ourself
         } else {
             // If in root prim, then ping for scripts in child prims.
             llMessageLinked(LINK_SET, UPDATE, "prepare", "");
-            
             // and set the death timer
             llSetTimerEvent(deathtimer);            
         }
     }
     
     link_message(integer sender, integer num, string str, key id) {
-        Debug(llDumpList2String([sender, num, str, id], ", "));
         if (num == UPDATE) {
             // If a child script responds with a script pin, clone self there.
             list parts = llParseString2List(str, ["|"], []);
@@ -111,7 +100,6 @@ default
     }
     
     timer() {
-        Debug("timer");
         llRemoveInventory(llGetScriptName());
     }
 }

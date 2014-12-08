@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                              OpenCollar - label                                //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -16,7 +16,6 @@ string g_sParentMenu = "Apps";
 string g_sSubMenu = "Label";
 
 key g_kWearer;
-
 integer g_iAppLock = FALSE;
 string g_sAppLockToken = "Appearance_Lock";
 
@@ -27,33 +26,26 @@ integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
 //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the httpdb script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
 integer LM_SETTING_EMPTY = 2004;//sent when a token has no value in the httpdb
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
 
 integer g_iCharLimit = -1;
-
 string UPMENU = "BACK";
 string CTYPE = "collar";
-
 string g_sTextMenu = "Set Label";
 string g_sFontMenu = "Font";
 string g_sColorMenu = "Color";
-
 key g_kDialogID;
 key g_kTBoxID;
 key g_kFontID;
@@ -113,64 +105,32 @@ integer DISPLAY_STRING      = 204000;
 integer DISPLAY_EXTENDED    = 204001;
 integer REMAP_INDICES       = 204002;
 integer RESET_INDICES       = 204003;
-//integer SET_FADE_OPTIONS    = 204004;
 integer SET_FONT_TEXTURE    = 204005;
-//integer SET_LINE_COLOR      = 204006;
-//integer SET_COLOR           = 204007;
 integer RESCAN_LINKSET      = 204008;
-
 // This is an extended character escape sequence.
 string  ESCAPE_SEQUENCE = "\\e";
-
 // This is used to get an index for the extended character.
 string  EXTENDED_INDEX  = "12345";
-
 // Face numbers.
 // only one face needed. -1 lets setup function know that it hasn't run yet
 integer FACE          = -1;
-
-// Used to hide the text after a fade-out.
-//key     TRANSPARENT     = "701917a8-d614-471f-13dd-5f4644e36e3c";
-//key     null_key        = NULL_KEY;
 ///////////// END CONSTANTS ////////////////
-
 ///////////// GLOBAL VARIABLES ///////////////
 // This is the key of the font we are displaying.
-//key     gFontTexture        = "b2e7394f-5e54-aa12-6e1c-ef327b6bed9e";
-// 48 pixel font key     g_kFontTexture        = "f226766c-c5ac-690e-9018-5a37367ae95a";
-// 38 pixel font
-//key g_kFontTexture= "ac955f98-74bb-290f-7eb6-dca54e5e4491";
-//key g_kFontTexture= "e5efeead-c69e-eb81-e7bd-dad2bb787d2b"; // Bitstream Vera Monotype // SALAHZAR
 
-//key g_kFontTexture= "41b57e2d-e60b-01f0-8f23-e109f532d01d"; //oldEnglish Chars
-//key g_kFontTexture = "0d3c99c1-5df4-638c-0f51-ed8591ae8b93";  //Bitstream Vera Serif
-//key g_kFontTexture = "a37110e0-5a1f-810d-f999-d0b88568adf0";  //Apple Chancery
-//key g_kFontTexture = "020f8783-0d0d-88e3-487d-df3e07d068e7"; //Lucida Bright
-//key g_kFontTexture = "fa87184c-35ca-5143-fe24-cdf70e427a09"; // monotype Corsiva
-//key g_kFontTexture = "34835ebf-b13a-a054-46bc-678d0849025c"; // DejaVu Sans Mono
-//key g_kFontTexture = "316b2161-0669-1796-fec2-976526a29efd";//Andale Mono, Etched
-//key g_kFontTexture = "f38c6993-d85e-cffb-fce9-7aed87b80c2e";//andale mono etched 45 point
-//key g_kFontTexture = "bf2b6c21-e3d7-877b-15dc-ad666b6c14fe";//verily serif 40 etched, on white
 key g_kFontTexture = NULL_KEY;
 list g_lFonts = [
-    "Andale 1", "ccc5a5c9-6324-d8f8-e727-ced142c873da", //
-    "Andale 2", "8e10462f-f7e9-0387-d60b-622fa60aefbc", //not ideally aligned
-    "Serif 1", "2c1e3fa3-9bdb-2537-e50d-2deb6f2fa22c",
-    "Serif 2", "bf2b6c21-e3d7-877b-15dc-ad666b6c14fe",
-    "LCD", "014291dc-7fd5-4587-413a-0d690a991ae1"
+    "Andale 1", "5656a260-f0a2-4ab2-a1c4-8d52f1f376aa", // IW texture
+    "Andale 2", "68de2a4d-ea3f-45ee-a4de-df3d6fb9cb88", //not ideally aligned IW texture
+    "Serif 1", "d71ee1d2-1fba-4c83-b4aa-82ac3d3ee5a3",//IW texture
+    "Serif 2", "9e47575a-f04a-4666-a4ac-f85e8073fb22",//IW texture
+    "LCD", "278550c4-d65d-4430-bac8-d9668ba092c6" //IW texture
         ];
-
 // All displayable characters.  Default to ASCII order.
 string g_sCharIndex;
 list g_lDecode=[]; // to handle special characters from CP850 page for european countries // SALAHZAR
 string g_sScript;
-
 /////////// END GLOBAL VARIABLES ////////////
-
-Debug(string in)
-{
-    //llOwnerSay(in);
-}
 
 ResetCharIndex() {
 
@@ -185,9 +145,7 @@ ResetCharIndex() {
     g_lDecode+=[ "%CE%93", "%CF%80", "%CE%A3", "%CF%83", "%C2%B5", "%CF%84", "%CE%A6", "%CE%98", "%CE%A9", "%CE%B4" ];
     g_lDecode+=[ "%E2%88%9E", "%CF%86", "%CE%B5", "%E2%88%A9", "%E2%89%A1", "%C2%B1", "%E2%89%A5", "%E2%89%A4", "%E2%8C%A0", "%E2%8C%A1" ];
     g_lDecode+=[ "%C3%B7", "%E2%89%88", "%C2%B0", "%E2%88%99", "%C2%B7", "%E2%88%9A", "%E2%81%BF", "%C2%B2", "%E2%82%AC", "" ];
-
     // END // SALAHZAR
-
 }
 
 vector GetGridOffset(integer iIndex) {
@@ -196,10 +154,8 @@ vector GetGridOffset(integer iIndex) {
     integer iCol = iIndex % 10;
     // Return the offset in the texture.
     return <g_vGridOffset.x + 0.1 * iCol, g_vGridOffset.y - 0.05 * iRow, g_vGridOffset.z>; // SALAHZAR modified vertical offsets for 512x1024 textures    // Lulu modified for cut cylinders
-    //     return <-0.725 + 0.1 * iCol, 0.472 - 0.05 * iRow, 0.0>;
 }
 
-//ShowChars(integer link,vector grkID_offset1, vector grkID_offset2, vector grkID_offset3, vector grkID_offset4, vector grkID_offset5)
 ShowChars(integer link,vector grkID_offset)
 {
     // SALAHZAR modified .1 to .05 to handle different sized texture
@@ -214,28 +170,21 @@ integer GetIndex(string sChar)
 {
     integer  iRet=llSubStringIndex(g_sCharIndex, sChar);
     if(iRet>=0) return iRet;
-
     // special char do nice trick :)
     string sEscaped=llEscapeURL(sChar);
     integer iFound=llListFindList(g_lDecode, [sEscaped]);
-
     // Return blank if not found
     if(iFound<0) return 0;
-
     // return correct index
     return 100+iFound;
-
 }
 // END SALAHZAR
-
 
 RenderString(integer iLink, string sStr)
 {
     if(iLink <= 0) return; // check for negative and zero linknumber
-
     // Get the grid positions for each pair of characters.
     vector GridOffset1 = GetGridOffset( GetIndex(llGetSubString(sStr, 0, 0)) ); // SALAHZAR intermediate function
-
     // Use these grid positions to display the correct textures/offsets.
     //   ShowChars(iLink,GridOffset1, GridOffset2, GridOffset3, GridOffset4, GridOffset5);
     ShowChars(iLink,GridOffset1);
@@ -249,22 +198,17 @@ integer ConvertIndex(integer iIndex) {
         // Quick bounds check.
         if (iIndex > 15)
             iIndex = 15;
-
         iIndex += 94; // extended characters
     }
 
     return iIndex;
 }
-
 /////END XYTEXT FUNCTIONS
-
 // add for text scroll
 float g_fScrollTime = 0.2 ;
 integer g_iSctollPos ;
 string g_sScrollText;
 list g_lLabelLinks ;
-
-
 // find all 'Label' prims, count and store it's link numbers for fast work SetLabel() and timer
 integer LabelsCount()
 {
@@ -275,7 +219,6 @@ integer LabelsCount()
     list lTmp;
     integer iLink;
     integer iLinkCount = llGetNumberOfPrims();
-
     //find all 'Label' prims and count it's
     for(iLink=2; iLink <= iLinkCount; iLink++)
     {
@@ -292,7 +235,6 @@ integer LabelsCount()
     }
 
     g_iCharLimit = llGetListLength(g_lLabelLinks);
-
     //find all 'Label' prims and store it's links to list
     for(iLink=2; iLink <= iLinkCount; iLink++)
     {
@@ -311,9 +253,6 @@ integer LabelsCount()
             {
                 ok = FALSE;
                 llOwnerSay("Warning! Found duplicated label prims: "+sLabel+" with link numbers: "+(string)link+" and "+(string)iLink);
-                //llOwnerSay("Prims marked RED!");                
-                //llSetLinkPrimitiveParamsFast(link, [PRIM_COLOR, 1, <1,0,0>, 1.0, PRIM_TEXTURE, 1, TEXTURE_BLANK, <1,1,1>, <0,0,0>, 0] );
-                //llSetLinkPrimitiveParamsFast(iLink, [PRIM_COLOR, 1, <1,0,0>, 1.0, PRIM_TEXTURE, 1, TEXTURE_BLANK, <1,1,1>, <0,0,0>, 0] );
             }
         }
     }
@@ -326,13 +265,12 @@ SetLabel()
     if (g_iShow) sText = g_sLabelText;
     
     string sPadding;
-    if(g_iScroll==TRUE) // || llStringLength(g_sLabelText) > g_iCharLimit)
+    if(g_iScroll==TRUE)
     {
         // add some blanks
         while(llStringLength(sPadding) < g_iCharLimit) sPadding += " ";
         g_sScrollText = sPadding + sText;
         llSetTimerEvent(g_fScrollTime);
-        //g_iScroll = TRUE;
     }
     else
     {
@@ -340,7 +278,7 @@ SetLabel()
         llSetTimerEvent(0);
         //inlined single use CenterJustify function
         while(llStringLength(sPadding + sText + sPadding) < g_iCharLimit) sPadding += " ";
-        string sText = sPadding + sText;
+        sText = sPadding + sText;
         integer iCharPosition;
         for(iCharPosition=0; iCharPosition < g_iCharLimit; iCharPosition++)
         {
@@ -353,7 +291,6 @@ SetOffsets(key font)
 {
     // get 1-st link number from list
     integer link = llList2Integer(g_lLabelLinks, 0);
-
     // Compensate for label box-prims, which must use face 0. Others can be added as needed.
     list params = llGetLinkPrimitiveParams(link, [PRIM_DESC, PRIM_TYPE]);
     string desc = llGetSubString(llList2String(params, 0), 0, 4);
@@ -362,7 +299,7 @@ SetOffsets(key font)
         integer t = (integer)llList2String(params, 1);
         if (t == PRIM_TYPE_BOX)
         {
-            if (font == NULL_KEY) font = "bf2b6c21-e3d7-877b-15dc-ad666b6c14fe"; // LCD default for box
+            if (font == NULL_KEY) font = "9e47575a-f04a-4666-a4ac-f85e8073fb22"; // LCD default for box
             g_vGridOffset = <-0.45, 0.425, 0.0>;
             g_vRepeats = <0.126, 0.097, 0>;
             g_vOffset = <0.036, 0.028, 0>;
@@ -370,7 +307,7 @@ SetOffsets(key font)
         }
         else if (t == PRIM_TYPE_CYLINDER)
         {
-            if (font == NULL_KEY) font = "2c1e3fa3-9bdb-2537-e50d-2deb6f2fa22c"; // Serif default for cyl
+            if (font == NULL_KEY) font = "d71ee1d2-1fba-4c83-b4aa-82ac3d3ee5a3"; // Serif default for cyl
             g_vGridOffset = <-0.725, 0.425, 0.0>;
             g_vRepeats = <1.434, 0.05, 0>;
             g_vOffset = <0.037, 0.003, 0>;
@@ -383,7 +320,6 @@ SetOffsets(key font)
             if (n < 8 && o == 9) g_vOffset.y += 0.0015;
             else if (o < 8 && n == 9) g_vOffset.y -= 0.0015;
         }
-        Debug("Offset = " + (string)g_vOffset);
     }
     g_kFontTexture = font;
 }
@@ -412,10 +348,8 @@ MainMenu(key kID, integer iAuth)
     list lButtons= [g_sTextMenu, g_sColorMenu, g_sFontMenu];
     if (g_iShow) lButtons += ["☒ Show"];
     else lButtons += ["☐ Show"];
-    
     if (g_iScroll) lButtons += ["☒ Scroll"];
     else lButtons += ["☐ Scroll"];    
-        
     string sPrompt = "\nCustomize the " + CTYPE + "'s label!\n\nwww.opencollar.at/label";
     g_kDialogID=Dialog(kID, sPrompt, lButtons, [UPMENU], 0, iAuth);
 }
@@ -446,7 +380,6 @@ FontMenu(key kID, integer iAuth)
     g_kFontID=Dialog(kID, sPrompt, lButtons, [UPMENU], 0, iAuth);
 }
 
-
 integer UserCommand(integer iAuth, string sStr, key kAv)
 {
     if (iAuth > COMMAND_WEARER || iAuth < COMMAND_OWNER) return FALSE; // sanity check
@@ -458,10 +391,8 @@ integer UserCommand(integer iAuth, string sStr, key kAv)
             MainMenu(kAv, iAuth);
             return TRUE;
         }        
-        
         list lParams = llParseString2List(sStr, [" "], []);
         string sCommand = llToLower(llList2String(lParams, 0));
-
         if (sCommand == "lockappearance" && iAuth == COMMAND_OWNER)
         {
             if (llToLower(llList2String(lParams, 1)) == "0") g_iAppLock = FALSE;
@@ -524,7 +455,6 @@ integer UserCommand(integer iAuth, string sStr, key kAv)
             Notify(kAv,"Only owners can change the label!", FALSE);
         }
     }
-        
     return TRUE;
 }
 
@@ -532,21 +462,16 @@ default
 {
     state_entry()
     {   // Initialize the character index.
-        //llWhisper(0,"["+(string)llGetFreeMemory()+"]");
-        //g_sScript = llStringTrim(llList2String(llParseString2List(llGetScriptName(), ["-"], []), 1), STRING_TRIM) + "_";
         g_sScript = "label_";
         g_kWearer = llGetOwner();
-
         //first count the label prims.
         integer ok = LabelsCount();
         SetOffsets(NULL_KEY);
         ResetCharIndex();
-
         if (g_iCharLimit <= 0) {
             llMessageLinked(LINK_SET, MENUNAME_REMOVE, g_sParentMenu + "|" + g_sSubMenu, "");
-            llRemoveInventory(llGetScriptName());
+//            llRemoveInventory(llGetScriptName());// stops us deleting the script
         }        
-        //if(ok) SetLabel();
         g_sLabelText = llList2String(llParseString2List(llKey2Name(llGetOwner()), [" "], []), 0);
     }
 

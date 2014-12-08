@@ -1,20 +1,16 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                               OpenCollar - bell                                //
-//                                 version 3.989                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
-
-//scans for sounds starting with: bell_
-//show/hide for elements named: Bell
-//2009-01-30 Cleo Collins - 1. draft
 
 string g_sSubMenu = "Bell";
 string g_sParentMenu = "Apps";
@@ -37,7 +33,7 @@ integer g_iBellShow=FALSE; // is the bell visible
 string g_sBellShow="SHOW"; //menu text of bell visible
 string g_sBellHide="HIDE"; //menu text of bell hidden
 
-list g_listBellSounds=["7b04c2ee-90d9-99b8-fd70-8e212a72f90d","b442e334-cb8a-c30e-bcd0-5923f2cb175a","1acaf624-1d91-a5d5-5eca-17a44945f8b0","5ef4a0e7-345f-d9d1-ae7f-70b316e73742","da186b64-db0a-bba6-8852-75805cb10008","d4110266-f923-596f-5885-aaf4d73ec8c0","5c6dd6bc-1675-c57e-0847-5144e5611ef9","1dc1e689-3fd8-13c5-b57f-3fedd06b827a"]; // list with bell sounds
+list g_listBellSounds=["371d4111-c819-4465-a536-ab2ccc558913","dd86e1eb-3ec6-4f37-8a9f-ddbc3912a6da","cca3e6c9-64e1-4693-be47-6a113e944733","20ec2bc3-44bb-4098-b399-89cb66159f5a","a6fe7834-7477-4384-8600-705d32f57b30","cf8a2caf-63df-4601-ba9d-ef7d9f365adf","939b83a7-aab3-41cc-845e-fc7c1a11abda","33aeacbb-881e-47e6-a87f-9886bfdbd812"]; // list with bell sounds
 key g_kCurrentBellSound ; // curent bell sound key
 integer g_iCurrentBellSound; // curent bell sound sumber
 integer g_iBellSoundCount; // number of avail bell sounds
@@ -58,42 +54,21 @@ list g_lButtons;
 integer g_iHide ; // global hide
 
 //MESSAGE MAP
-//integer COMMAND_NOAUTH = 0;
 integer COMMAND_OWNER = 500;
-//integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-//integer COMMAND_RLV_RELAY = 507;
-
-//integer SEND_IM = 1000; deprecated.  each script should send its own IMs now.  This is to reduce even the tiny bt of lag caused by having IM slave scripts
-//integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
 //str must be in form of "token=value"
 //integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the httpdb script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
 integer LM_SETTING_EMPTY = 2004;//sent by httpdb script when a token has no value in the db
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
-//integer RLV_CMD = 6000;
-//integer RLV_REFRESH = 6001;//RLV plugins should reinstate their restrictions upon receiving this message.
-//integer RLV_CLEAR = 6002;//RLV plugins should clear their restriction lists upon receiving this message.
-
-//integer ANIM_START = 7000;//send this with the name of an anim in the string part of the message to play the anim
-//integer ANIM_STOP = 7001;//send this with the name of an anim in the string part of the message to stop the anim
-//integer CPLANIM_PERMREQUEST = 7002;//id should be av's key, str should be cmd name "hug", "kiss", etc
-//integer CPLANIM_PERMRESPONSE = 7003;//str should be "1" for got perms or "0" for not.  id should be av's key
-//integer CPLANIM_START = 7004;//str should be valid anim name.  id should be av
-//integer CPLANIM_STOP = 7005;//str should be valid anim name.  id should be av
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
-//integer DIALOG_TIMEOUT = -9002;
 
 string UPMENU = "BACK";//when your menu hears this, give the parent menu
 string g_sScript;
@@ -120,28 +95,12 @@ Notify(key kID, string sMsg, integer iAlsoNotifyWearer)
 }
 
 
-/*
-integer g_iProfiled;
-Debug(string sStr) {
-    //if you delete the first // from the preceeding and following  lines,
-    //  profiling is off, debug is off, and the compiler will remind you to 
-    //  remove the debug calls from the code, we're back to production mode
-    if (!g_iProfiled){
-        g_iProfiled=1;
-        llScriptProfiler(1);
-    }
-    llOwnerSay(llGetScriptName() + "("+(string)llGetSPMaxMemory()+") : " + sStr);
-}
-*/
-
 DoMenu(key kID, integer iAuth)
 {
     string sPrompt = "\n";
     // sPrompt += "(Menu will time out in " + (string)g_iTimeOut + " seconds.)\n";
     list lMyButtons;
-    
     //fill in your button list here
-
     // Show buton for ringing the bell and add a text for it
     if (g_iBellOn>0) // the bell rings currently
     {
@@ -153,7 +112,6 @@ DoMenu(key kID, integer iAuth)
         lMyButtons+= g_sBellOn;
         sPrompt += "Bell is NOT ringing";
     }
-
     // Show button for showing/hidding the bell and add a text for it, if there is a bell
     if (g_iBellShow) // the bell is hidden
     {
@@ -165,7 +123,6 @@ DoMenu(key kID, integer iAuth)
         lMyButtons+= g_sBellShow;
         sPrompt += " and NOT shown.\n\n";
     }
-
     // and show the volume and timing of the bell sound
     sPrompt += "The volume of the bell is now: "+(string)((integer)(g_fVolume*10))+"/10.\n";
     sPrompt += "The bell rings every "+llGetSubString((string)g_fSpeed,0,2)+" seconds when moving.\n";
@@ -181,7 +138,6 @@ SetBellElementAlpha()
 {
     if (g_iHide) return ; // ***** if collar is hide, don't do anything 
     //loop through stored links, setting color if element type is bell
-    
     integer n;
     integer iLinkElements = llGetListLength(g_lBellElements);
     for (n = 0; n < iLinkElements; n++)
@@ -195,10 +151,8 @@ BuildBellElementList()
     integer n;
     integer iLinkCount = llGetNumberOfPrims();
     list lParams;
-
     // clear list just in case
     g_lBellElements = [];
-
     //root prim is 1, so start at 2
     for (n = 2; n <= iLinkCount; n++)
     {
@@ -214,7 +168,7 @@ BuildBellElementList()
     }
     if (llGetListLength(g_lBellElements)==0){
         llMessageLinked(LINK_SET, MENUNAME_REMOVE, g_sParentMenu + "|" + g_sSubMenu, "");
-        llRemoveInventory(llGetScriptName());
+//        llRemoveInventory(llGetScriptName()); //stops us removing the bell
     }
 
 }
@@ -374,13 +328,10 @@ default
         // key of the owner
         g_kWearer=llGetOwner();
         WEARERNAME = GetName(g_kWearer);
-
         // reset script time used for ringing the bell in intervalls
         llResetTime();
-
         // bild up list of prims with bell elements
         BuildBellElementList();
-
         PrepareSounds();
         SetBellElementAlpha();
         //llSetMemoryLimit(32768); //The risk is limited memory scenario when there is a local menu
@@ -431,8 +382,10 @@ default
         integer iInd = llSubStringIndex(sStr, "=");
         string sValue = llGetSubString(sStr, iInd + 1, -1);
         //We have a broadcasted change to WEARERNAME to work with
-        if (iNum == LM_SETTING_RESPONSE) WEARERNAME = sValue;
-        else {
+        if (iNum == LM_SETTING_RESPONSE) 
+          WEARERNAME = sValue;
+        else 
+        {
             g_kWearer = llGetOwner();
             WEARERNAME = GetName(g_kWearer);
             }
@@ -478,7 +431,6 @@ default
         else if (iNum==DIALOG_RESPONSE)
         {
             //str will be a 2-element, pipe-delimited list in form pagenum|response
-    
             if (kID == g_kDialogID)
             {
                 list lMenuParams = llParseString2List(sStr, ["|"], []);
@@ -533,7 +485,6 @@ default
                         g_fNextRing=llGetTime()+g_fSpeed;
                         // and play the sound
                         llPlaySound(g_kCurrentBellSound,g_fVolume);
-                        //Debug("Bing");
                     }
                 }
                 else if (sMessage == g_sBellOff || sMessage == g_sBellOn)
@@ -584,7 +535,6 @@ default
                 g_fNextRing=llGetTime()+g_fSpeed;
                 // and play the sound
                 llPlaySound(g_kCurrentBellSound,g_fVolume);
-                //Debug("Bing");
             }
         }
     }
@@ -594,7 +544,6 @@ default
     {
         if( nParam & PERMISSION_TAKE_CONTROLS)
         {
-            //Debug("Bing");
             llTakeControls( CONTROL_DOWN|CONTROL_UP|CONTROL_FWD|CONTROL_BACK|CONTROL_LEFT|CONTROL_RIGHT|CONTROL_ROT_LEFT|CONTROL_ROT_RIGHT, TRUE, TRUE);
             g_iHasControl=TRUE;
 
@@ -611,18 +560,9 @@ default
                 g_iHide = iNewHide;
                 SetBellElementAlpha(); // update hide elements 
             }
-        }
-/*        
-        if (iChange & CHANGED_REGION) {
-            if (g_iProfiled){
-                llScriptProfiler(1);
-                Debug("profiling restarted");
-            }
-        }
-*/        
+        } 
     }
     
-
     touch_start(integer n)
     {
         if (g_iBellShow && !g_iHide && llListFindList(g_lBellElements,[llDetectedLinkNumber(0)]) != -1)

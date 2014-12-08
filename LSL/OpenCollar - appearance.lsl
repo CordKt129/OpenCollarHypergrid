@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
-//                            OpenCollar - appearance                             //
-//                                 version 3.988                                  //
+//                               OpenCollar - appearance                          //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -58,37 +58,29 @@ integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
 integer COMMAND_RLV_RELAY = 507;
-
-//integer SEND_IM = 1000; deprecated.  each script should send its own IMs now.  This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
                             //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the httpdb script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
 integer LM_SETTING_EMPTY = 2004;//sent by httpdb script when a token has no value in the db
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
 integer RLV_CMD = 6000;
 integer RLV_REFRESH = 6001;//RLV plugins should reinstate their restrictions upon receiving this message.
 integer RLV_CLEAR = 6002;//RLV plugins should clear their restriction lists upon receiving this message.
-
 integer ANIM_START = 7000;//send this with the name of an anim in the string part of the message to play the anim
 integer ANIM_STOP = 7001;//send this with the name of an anim in the string part of the message to stop the anim
 integer CPLANIM_PERMREQUEST = 7002;//id should be av's key, str should be cmd name "hug", "kiss", etc
 integer CPLANIM_PERMRESPONSE = 7003;//str should be "1" for got perms or "0" for not.  id should be av's key
 integer CPLANIM_START = 7004;//str should be valid anim name.  id should be av
 integer CPLANIM_STOP = 7005;//str should be valid anim name.  id should be av
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
 
-//string UPMENU = "â†‘";//when your menu hears this, give the parent menu
 string UPMENU = "BACK";
 
 key g_kWearer;
@@ -112,10 +104,6 @@ Notify(key kID, string sMsg, integer iAlsoNotifyWearer)
     }
 }
 
-Debug(string sStr)
-{
-    //llOwnerSay(llGetScriptName() + ": " + sStr);
-}
 string GetScriptID()
 {
     // strip away "OpenCollar - " leaving the script's individual name
@@ -173,7 +161,6 @@ integer MinMaxScaled(vector vSize, float fScale)
     }
     return FALSE;
 }
-
 
 Store_StartScaleLoop()
 {
@@ -252,7 +239,6 @@ ScalePrimLoop(integer iScale, integer iRezSize, key kAV)
         g_iSizedByScript = TRUE;
         for (iPrimIndex = 1; iPrimIndex <= llGetNumberOfPrims(); iPrimIndex++ )
         {
-//            lPrimParams = llGetLinkPrimitiveParams(iPrimIndex, [PRIM_SIZE, PRIM_POSITION]);
             vPrimScale = fScale * llList2Vector(g_lPrimStartSizes, (iPrimIndex - 1)*2);
             vPrimPos = fScale * llList2Vector(g_lPrimStartSizes, (iPrimIndex - 1)*2+1);
             if (iPrimIndex == 1) 
@@ -269,7 +255,6 @@ ScalePrimLoop(integer iScale, integer iRezSize, key kAV)
         Notify(kAV, "Scaling finished, the "+CTYPE+" is now on "+ (string)g_iScaleFactor +"% of the rez size.", TRUE);
     }
 }
-
 
 ForceUpdate()
 {
@@ -351,7 +336,6 @@ SizeMenu(key kAv, integer iAuth)
     {
         g_lMenuIDs = llListReplaceList(g_lMenuIDs, lAddMe, iMenuIndex, iMenuIndex + g_iMenuStride - 1);
     }
-        Debug("FreeMem: " + (string)llGetFreeMemory());
 }
 
 DoMenu(key kAv, integer iAuth)
@@ -368,7 +352,6 @@ DoMenu(key kAv, integer iAuth)
         sPrompt = "\nChange the looks, adjustment and size of your "+CTYPE+".\n\nwww.opencollar.at/appearance";
     
         lMyButtons = [UNTICKED + APPLOCK] + g_lButtons + g_lLocalButtons ;
-        //lMyButtons += llListSort(g_lLocalButtons + g_lButtons, 1, TRUE);
     }
     key kMenuID = Dialog(kAv, sPrompt, lMyButtons, [UPMENU], 0, iAuth);
     integer iMenuIndex = llListFindList(g_lMenuIDs, [kAv]);
@@ -389,10 +372,7 @@ default
     {
         g_kWearer = llGetOwner();       
         g_fRotNudge = PI / 32.0;//have to do this here since we can't divide in a global var declaration   
-
         Store_StartScaleLoop();
-        
-        Debug("FreeMem: " + (string)llGetFreeMemory());
     }
     
     on_rez(integer iParam)
@@ -446,11 +426,6 @@ default
                 }
                 else DoMenu(kID, iNum);
             }
-            /*else if (sStr == "refreshmenu")
-            {
-                g_lButtons = [];
-                llMessageLinked(LINK_SET, MENUNAME_REQUEST, g_sSubMenu, "");
-            }*/
             else if (sStr == "appearance")
             {
                 if (kID!=g_kWearer && iNum!=COMMAND_OWNER)

@@ -1,62 +1,48 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                              OpenCollar - titler                               //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
-
-// Nandana Singh, Satomi Ahn, Romka Swallowtail, littlemousy, Wendy Starfall
 
 string g_sParentMenu = "Apps";
 string g_sFeatureName = "Titler";
 string g_sPrimDesc = "FloatText";   //description text of the hovertext prim.  Needs to be separated from the menu name.
 
 //MESSAGE MAP
-//integer COMMAND_NOAUTH = 0;
 integer COMMAND_OWNER = 500;
 integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-//integer SEND_IM = 1000; deprecated. each script should send its own IMs now. This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
-//integer UPDATE = 10001;
-
 integer LM_SETTING_SAVE = 2000;
 integer LM_SETTING_REQUEST = 2001;
 integer LM_SETTING_RESPONSE = 2002;
 integer LM_SETTING_DELETE = 2003;
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
-//integer DIALOG_TIMEOUT = -9002;
-
 
 integer g_iLastRank = COMMAND_EVERYONE ;
 integer g_iOn = FALSE;
 string g_sText;
 vector g_vColor = <1.0,1.0,1.0>; // default white 
-
 integer g_iTextPrim;
 string g_sScript= "titler_";
-
 key g_kWearer;
-
 key g_kDialogID;    //menu handle
 key g_kColourDialogID;    //menu handle
 key g_kTBoxId;      //text box handle
-
 string SET = "Set Title" ;
 string UP = "↑ Up";
 string DN = "↓ Down";
@@ -80,8 +66,6 @@ list g_lColours=[
     "White",<1.00000, 1.00000, 1.00000>
 ];
 
-//Debug(string sMsg) {llOwnerSay(llGetScriptName() + " (debug): " + sMsg);}
-
 Notify(key kID, string sMsg, integer iAlsoNotifyWearer){
     if (kID == g_kWearer) llOwnerSay(sMsg);
     else {
@@ -98,8 +82,6 @@ key Dialog(key kRCPT, string sPrompt, list lChoices, list lUtilityButtons, integ
 }
 
 ShowHideText(){
-    //Debug("ShowHideText");
-    //llSleep(1.0); // not sure that it should be
     if (g_iTextPrim >0){
         if (g_sText == "") g_iOn = FALSE;
         llSetLinkPrimitiveParamsFast(g_iTextPrim, [PRIM_TEXT,g_sText,g_vColor,(float)g_iOn, PRIM_SIZE,g_vPrimScale, PRIM_SLICE,<0.490,0.51,0.0>]);
@@ -192,8 +174,6 @@ integer UserCommand(integer iAuth, string sStr, key kAv){
 
 default{
     state_entry(){
-        //llOwnerSay("state entry:"+(string)llGetFreeMemory());
-
         //get colour, description and 
         g_iTextPrim = -1 ;
         // find the text prim
@@ -211,16 +191,12 @@ default{
             }
         }
         g_kWearer = llGetOwner();
-        //Debug("State Entry Event ended");
-        
         if (g_iTextPrim < 0) {
             llMessageLinked(LINK_SET, MENUNAME_REMOVE, g_sParentMenu + "|" + g_sFeatureName, "");
-            llRemoveInventory(llGetScriptName());
         }
     } 
     
     link_message(integer iSender, integer iNum, string sStr, key kID){
-        //Debug("Link Message Event");
         if (UserCommand(iNum, sStr, kID)) return;
         if (iNum == MENUNAME_REQUEST && sStr == g_sParentMenu) {
             llMessageLinked(LINK_ROOT, MENUNAME_RESPONSE, g_sParentMenu + "|" + g_sFeatureName, "");

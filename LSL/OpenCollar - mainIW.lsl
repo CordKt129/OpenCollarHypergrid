@@ -1,34 +1,24 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
-//                               OpenCollar - main                                //
-//                                 version 3.990                                  //
+//                               OpenCollar - mainIW                              //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
-//on start, send request for submenu names
-//on getting submenu name, add to list if not already present
-//on menu request, give dialog, with alphabetized list of submenus
-//on listen, send submenu link message
-
-string g_sCollarVersion="3.990";
+string g_sCollarVersion="3.992";
 integer g_iLatestVersion=TRUE;
 
 list g_lOwners;
 key g_kWearer;
-//string g_sOldRegionName;
-//list g_lMenuPrompts;
-    
-
 list g_lMenuIDs;//3-strided list of avatars given menus, their dialog ids, and the name of the menu they were given
 integer g_iMenuStride = 3;
-
 integer g_iScriptCount;//when the scriptcount changes, rebuild menus
 
 //MESSAGE MAP
@@ -38,27 +28,19 @@ integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
-//integer SEND_IM = 1000; deprecated.  each script should send its own IMs now.  This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
                             //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the httpdb script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
 integer LM_SETTING_EMPTY = 2004;//sent when a token has no value in the httpdb
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
-//5000 block is reserved for IM slaves
-
 integer RLV_CMD = 6000;
 integer RLV_REFRESH = 6001;//RLV plugins should reinstate their restrictions upon receiving this message.
 integer RLV_CLEAR = 6002;//RLV plugins should clear their restriction lists upon receiving this message.
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
@@ -100,38 +82,18 @@ integer g_iPaintMenu=FALSE;
 
 integer g_iUpdateChan = -7483214;
 integer g_iUpdateHandle;
-
 key g_kUpdaterOrb;
 integer g_iUpdateFromMenu;
-
-string version_check_url = "https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/hypergrid/LSL/~version";
+string version_check_url = "https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/inworldz/LSL/~version";
 key github_version_request;
-
-string news_url = "https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/hypergrid/LSL/~news";
+string news_url = "https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/inworldz/LSL/~news";
 key news_request;
 string g_sLastNewsTime = "0";
-
 integer g_iUpdateAuth;
 integer g_iWillingUpdaters = 0;
-
 integer g_iListenChan=1;
 string g_sSafeWord="RED";
 string g_sPrefix;
-
-/*
-integer g_iProfiled;
-Debug(string sStr) {
-    //if you delete the first // from the preceeding and following  lines,
-    //  profiling is off, debug is off, and the compiler will remind you to 
-    //  remove the debug calls from the code, we're back to production mode
-    if (!g_iProfiled){
-        g_iProfiled=1;
-        llScriptProfiler(1);
-    }
-    llOwnerSay(llGetScriptName() + "(min free:"+(string)(llGetMemoryLimit()-llGetSPMaxMemory())+") :\n" + sStr);
-}
-*/
-
 
 string AutoPrefix()
 {
@@ -140,23 +102,16 @@ string AutoPrefix()
 }
 
 integer compareVersions(string v1, string v2){ //compares two symantic version strings, true if v1 >= v2
-    //Debug("compare "+v1+" with "+v2);
         
     integer v1Index=llSubStringIndex(v1,".");
     integer v2Index=llSubStringIndex(v2,".");
-    
-    //Debug("v1Index: "+(string)v1Index);
-    //Debug("v2Index: "+(string)v2Index);
-    
     integer v1a=(integer)llGetSubString(v1,0,v1Index);
     integer v2a=(integer)llGetSubString(v2,0,v2Index);
     
     if (v1a == v2a) {
-        //Debug((string)v1a+" == "+(string)v2a);
         if (~v1Index || ~v2Index){
             string v1b;
             if (v1Index == -1 || v1Index==llStringLength(v1)) {
-                //Debug("v1b empty");
                 v1b="0";
             } else {
                 v1b=llGetSubString(v1,v1Index+1,-1);
@@ -164,7 +119,6 @@ integer compareVersions(string v1, string v2){ //compares two symantic version s
 
             string v2b;
             if (v2Index == -1 || v2Index==llStringLength(v2)) {
-                //Debug("v2b empty");
                 v2b="0";
             } else {
                 v2b=llGetSubString(v2,v2Index+1,-1);
@@ -172,11 +126,9 @@ integer compareVersions(string v1, string v2){ //compares two symantic version s
 
             return compareVersions(v1b,v2b);
         } else {
-            //Debug("0 as nothing to compare");
             return FALSE;
         }
     }
-    //Debug((string)(v1a > v2a));
     return v1a > v2a;
 }
 
@@ -203,7 +155,6 @@ Notify(key kID, string sMsg, integer iAlsoNotifyWearer) {
 
 AppsMenu(key kID, integer iAuth) {
     string sPrompt="\nBrowse apps, extras and custom features.\n\nwww.opencollar.at/apps";
-    //Debug("max memory used: "+(string)llGetSPMaxMemory());
     Dialog(kID, sPrompt, g_lAppsButtons, [UPMENU], 0, iAuth, "Apps");
 }
 HelpMenu(key kID, integer iAuth) {
@@ -211,10 +162,7 @@ HelpMenu(key kID, integer iAuth) {
     if(!g_iLatestVersion) sPrompt+="Update available!";
     sPrompt+="\n\nPrefix: "+g_sPrefix+"\nChannel: "+(string)g_iListenChan+"\nSafeword: "+g_sSafeWord;
     sPrompt+="\n\nwww.opencollar.at/helpabout";
-
-    //Debug("max memory used: "+(string)llGetSPMaxMemory());
     list lUtility = [UPMENU];
-    
     string sNewsButton="☐ News";
     if (g_iNews){
         sNewsButton="☒ News";
@@ -226,7 +174,6 @@ MainMenu(key kID, integer iAuth) {
     string sPrompt="\nOpenCollar Version "+g_sCollarVersion;
     if(!g_iLatestVersion) sPrompt+="\nUpdate available!";
     sPrompt += "\n\nwww.opencollar.at/main-menu";
-    //Debug("max memory used: "+(string)llGetSPMaxMemory());
     list lStaticButtons=["Apps"];
     if (g_iAnimsMenu){
         lStaticButtons+="Animations";
@@ -283,8 +230,6 @@ integer UserCommand(integer iNum, string sStr, key kID, integer fromMenu) {
             else  llMessageLinked(LINK_SET, COMMAND_NOAUTH, "menu", kAv);   //else send an auth request for the menu
         }
     } else if (sCmd == "lock" || (!g_iLocked && sStr == "togglelock")) {    //does anything use togglelock?  If not, it'd be nice to get rid of it
-        //Debug("User command:"+sCmd);
-
         if (iNum == COMMAND_OWNER || kID == g_kWearer ) {   //primary owners and wearer can lock and unlock. no one else
             //inlined old "Lock()" function        
             g_iLocked = TRUE;
@@ -292,7 +237,6 @@ integer UserCommand(integer iNum, string sStr, key kID, integer fromMenu) {
             llMessageLinked(LINK_SET, RLV_CMD, "detach=n", "main");
             llPlaySound(g_sLockSound, 1.0);
             SetLockElementAlpha();//EB
-
             Notify(kID,CTYPE + " has been locked.",TRUE);
         }
         else Notify(kID, "Sorry, only primary owners and wearer can lock the " + CTYPE + ".", FALSE);
@@ -305,7 +249,6 @@ integer UserCommand(integer iNum, string sStr, key kID, integer fromMenu) {
             llMessageLinked(LINK_SET, RLV_CMD, "detach=y", "main");
             llPlaySound(g_sUnlockSound, 1.0);
             SetLockElementAlpha(); //EB
-
             Notify(kID,CTYPE + " has been unlocked.",TRUE);
         }
         else Notify(kID, "Sorry, only primary owners can unlock the " + CTYPE + ".", FALSE);
@@ -488,7 +431,8 @@ default
     state_entry() {
         g_kWearer = llGetOwner(); //updates in change event prompting script restart
         WEARERNAME = llGetDisplayName(g_kWearer);
-        if (WEARERNAME == "???" || WEARERNAME == "") WEARERNAME == llKey2Name(g_kWearer);
+        if (WEARERNAME == "???" || WEARERNAME == "") 
+            WEARERNAME = llKey2Name(g_kWearer);
         BuildLockElementList(); //updates in change event, doesn;t need a reset every time
         g_iScriptCount = llGetInventoryNumber(INVENTORY_SCRIPT);  //updates on change event;
         
@@ -590,7 +534,7 @@ default
                     } else if (sMessage == LICENSE) {
                         UserCommand(iAuth,"license",kAv, TRUE);
                     } else if (sMessage == CONTACT) {
-                        g_kWebLookup = llHTTPRequest("https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/hypergrid/LSL/~contact", [HTTP_METHOD, "GET", HTTP_VERBOSE_THROTTLE, FALSE], "");
+                        g_kWebLookup = llHTTPRequest("https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/inworldz/LSL/~contact", [HTTP_METHOD, "GET", HTTP_VERBOSE_THROTTLE, FALSE], "");
                         g_kCurrentUser = kAv;
                         HelpMenu(kAv, iAuth);
                     } else if (sMessage=="☐ News") {
@@ -604,8 +548,8 @@ default
             }
         }
         else if (UserCommand(iNum, sStr, kID, FALSE)) return;
-        else if ((iNum == LM_SETTING_RESPONSE || iNum == LM_SETTING_DELETE) 
-                && llSubStringIndex(sStr, "Global_WearerName") == 0 ) {
+        else if ((iNum == LM_SETTING_RESPONSE || iNum == LM_SETTING_DELETE) && llSubStringIndex(sStr, "Global_WearerName") == 0 ) 
+                {
             integer iInd = llSubStringIndex(sStr, "=");
             string sValue = llGetSubString(sStr, iInd + 1, -1);
             //We have a broadcasted change to WEARERNAME to work with
@@ -613,7 +557,8 @@ default
             else {
                 g_kWearer = llGetOwner();
                 WEARERNAME = llGetDisplayName(g_kWearer);
-                if (WEARERNAME == "???" || WEARERNAME == "") WEARERNAME == llKey2Name(g_kWearer);
+                if (WEARERNAME == "???" || WEARERNAME == "") 
+                    WEARERNAME = llKey2Name(g_kWearer);
             }
         }
         else if (iNum == LM_SETTING_RESPONSE)
@@ -759,7 +704,7 @@ default
         llListenRemove(g_iUpdateHandle);
 
         if (!g_iWillingUpdaters) {   //if no updaters responded, get upgrader info from web and remenu
-            g_kWebLookup = llHTTPRequest("https://raw.githubusercontent.com/OpenCollar/OpenCollarHypergrid/hypergrid/LSL/~update", [HTTP_METHOD, "GET", HTTP_VERBOSE_THROTTLE, FALSE], "");
+            g_kWebLookup = llHTTPRequest("https://raw.githubusercontent.com/OpenCollar/OpenCollarUpdater/main/LSL/~update", [HTTP_METHOD, "GET", HTTP_VERBOSE_THROTTLE, FALSE], "");
             if (g_iUpdateFromMenu) HelpMenu(g_kCurrentUser,g_iUpdateAuth);
         } else if (g_iWillingUpdaters > 1) {    //if too many updaters, PANIC!
             Notify(g_kCurrentUser,"Multiple updaters were found within 10m.  Please remove all but one and try again",FALSE);

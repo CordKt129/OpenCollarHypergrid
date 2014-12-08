@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                             OpenCollar - badwords                              //
-//                                 version 3.990                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,36 +23,26 @@ integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
 integer COMMAND_SAFEWORD = 510;  // new for safeword
-
-//integer SEND_IM = 1000; deprecated.  each script should send its own IMs now.  This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
 //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the httpdb script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
 integer LM_SETTING_EMPTY = 2004;//sent by httpdb script when a token has no value in the db
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
 integer RLV_CMD = 6000;
-
 integer ANIM_START = 7000;
 integer ANIM_STOP = 7001;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
 
-//5000 block is reserved for IM slaves
 string CTYPE = "collar";
-
 string UPMENU = "BACK";
 
-//string g_sDefaultSound = "011ef7f4-40e8-28fe-4ea5-f2fda0883707";
 string g_sDefaultSound = "4546cdc8-8682-6763-7d52-2c1e67e8257d";
 string g_sNoSound = "silent" ;
 string g_sBadWordSound;
@@ -80,11 +70,6 @@ string g_sIsEnabled = "badwordson=false";
 //added to stop abdword anim only if it was started by using a badword
 integer g_iHasSworn = FALSE;
 string g_sScript;
-
-Debug(string sMsg)
-{
-    //llOwnerSay(llGetScriptName() + ": " + sMsg);
-}
 
 key Dialog(key kRCPT, string sPrompt, list lChoices, list lUtilityButtons, integer iPage, integer iAuth)
 {
@@ -116,13 +101,7 @@ DialogBadwords(key kID, integer iAuth)
         lButtons += ["ON"];
         sText += "\nBadwords are turned OFF.";
     }
-        sText+="\n\nwww.opencollar.at/badwords";
-    /*sText += "'Set Penance' write the penance the sub has to say to get released from the animation.\n";
-    sText += "'Add Word' add another badword.\n";
-    sText += "'Remove Word' shows the list of badwords and allows removing them.\n";
-    sText += "'Set Animation' select the animation to use as a punishment.\n";
-    sText += "'Set Sound' select the sound tto use as a punishment.\n";*/
-    
+    sText+="\n\nwww.opencollar.at/badwords";
     g_kDialog = g_kMainDialog = Dialog(kID, sText, lButtons, ["Clear All","Settings", UPMENU],0, iAuth);
 }
 

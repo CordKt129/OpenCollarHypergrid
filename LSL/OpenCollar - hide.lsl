@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // ------------------------------------------------------------------------------ //
 //                               OpenCollar - hide                                //
-//                                 version 3.988                                  //
+//                                 version 3.992                                  //
 // ------------------------------------------------------------------------------ //
 // Licensed under the GPLv2 with additional requirements specific to Second Life® //
 // and other virtual metaverse environments.  ->  www.opencollar.at/license.html  //
 // ------------------------------------------------------------------------------ //
 // ©   2008 - 2014  Individual Contributors and OpenCollar - submission set free™ //
 // ------------------------------------------------------------------------------ //
-//                    github.com/OpenCollar/OpenCollarUpdater                     //
+//          github.com/OpenCollar/OpenCollarHypergrid/tree/inworldz               //
 // ------------------------------------------------------------------------------ //
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -26,56 +26,40 @@ integer COMMAND_SECOWNER = 501;
 integer COMMAND_GROUP = 502;
 integer COMMAND_WEARER = 503;
 integer COMMAND_EVERYONE = 504;
-
-//integer SEND_IM = 1000; deprecated.  each script should send its own IMs now.  This is to reduce even the tiny bt of lag caused by having IM slave scripts
 integer POPUP_HELP = 1001;
-
 integer LM_SETTING_SAVE = 2000;//scripts send messages on this channel to have settings saved to httpdb
 //str must be in form of "token=value"
 integer LM_SETTING_REQUEST = 2001;//when startup, scripts send requests for settings on this channel
 integer LM_SETTING_RESPONSE = 2002;//the httpdb script will send responses on this channel
 integer LM_SETTING_DELETE = 2003;//delete token from DB
 integer LM_SETTING_EMPTY = 2004;//sent when a token has no value in the httpdb
-
 integer MENUNAME_REQUEST = 3000;
 integer MENUNAME_RESPONSE = 3001;
 integer MENUNAME_REMOVE = 3003;
-
 integer DIALOG = -9000;
 integer DIALOG_RESPONSE = -9001;
 integer DIALOG_TIMEOUT = -9002;
-
 integer TOUCH_REQUEST = -9500;
 integer TOUCH_CANCEL = -9501;
 integer TOUCH_RESPONSE = -9502;
 integer TOUCH_EXPIRE = -9503;
 
-//5000 block is reserved for IM slaves
 string CTYPE = "Collar";
 string HIDE = "☒";
 string SHOW = "☐";
 string UPMENU = "BACK";
-
 string g_sScript;
-
 list g_lElements;
 list g_lGlows; // 2-strided list [integer link_num, float glow]
-
 key g_kWearer;
-
 key g_kDialogID;
 key g_kTouchID;
-
 list g_lAlphaSettings;
-
 string g_sIgnore = "nohide";
 list g_lButtons;
-
 integer g_iAppLock = FALSE;
 string g_sAppLockToken = "Appearance_Lock";
-
 integer g_iAllAlpha = 1 ;
-
 integer g_iHasElements = FALSE;
 
 Notify(key kID, string sMsg, integer iAlsoNotifyWearer)
@@ -237,7 +221,6 @@ BuildElementList()
     g_lElements = [];
     integer link;
     integer count = llGetNumberOfPrims();
-
     //root prim is 1, so start at 2
     for (link = 2; link <= count; link++)
     {
@@ -252,7 +235,6 @@ BuildElementList()
     if (llGetListLength(g_lElements) > 0 ) g_iHasElements = TRUE;
     else g_iHasElements = FALSE;
 }
-
 
 UpdateGlow(integer link, integer alpha)
 {
@@ -399,7 +381,6 @@ integer UserCommand(integer iNum, string sStr, key kID)
 
     return TRUE ;
 }
-
 
 // Get Group or Token, 0=Group, 1=Token, 2=Value
 string SplitTokenValue(string in, integer slot)
